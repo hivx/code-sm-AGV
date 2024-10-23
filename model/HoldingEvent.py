@@ -1,9 +1,9 @@
 from .Event import Event
 import pdb
 class HoldingEvent(Event):
-    def __init__(self, startTime, endTime, agv, graph, duration):
+    def __init__(self, start_time, end_time, agv, graph, duration):
         
-        super().__init__(startTime, endTime, agv, graph)
+        super().__init__(start_time, end_time, agv, graph)
         self.duration = duration
         #print("Create event")
         #self.largest_id = get_largest_id_from_map("map.txt")

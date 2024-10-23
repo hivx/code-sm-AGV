@@ -1,14 +1,14 @@
 from .Event import Event
 
 class RestrictionEvent(Event):
-    def __init__(self, startTime, endTime, agv, graph, start_node, end_node):
-        super().__init__(startTime, endTime, agv, graph)
+    def __init__(self, start_time, end_time, agv, graph, start_node, end_node):
+        super().__init__(start_time, end_time, agv, graph)
         self.start_node = start_node
         self.end_node = end_node
 
     def updateGraph(self):
         # Giả định thời gian di chuyển thực tế khác với dự đoán do các ràng buộc đặc biệt
-        actual_time = self.endTime - self.startTime
+        actual_time = self.end_time - self.start_time
         predicted_time = self.graph.get_edge(self.start_node, self.end_node).weight
 
         if actual_time != predicted_time:
@@ -33,7 +33,7 @@ class RestrictionEvent(Event):
     def process(self):
         # Xử lý khi sự kiện được gọi
         print(
-            f"AGV {self.agv.id} moves from {self.start_node} to {self.end_node} under restrictions, taking {self.endTime - self.startTime} seconds"
+            f"AGV {self.agv.id} moves from {self.start_node} to {self.end_node} under restrictions, taking {self.end_time - self.start_time} seconds"
         )
         self.updateGraph(self.graph)
         self.calculateCost()

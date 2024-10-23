@@ -1,7 +1,7 @@
 from .Event import Event
 class TimeWindowsEvent(Event):
-    def __init__(self, startTime, endTime, agv, graph, target_node):
-        super().__init__(startTime, endTime, agv, graph)
+    def __init__(self, start_time, end_time, agv, graph, target_node):
+        super().__init__(start_time, end_time, agv, graph)
         self.target_node = target_node  # Mục tiêu mà AGV phải đạt đến trong một khoảng thời gian nhất định
 
     def calculateCost(self):
@@ -25,6 +25,6 @@ class TimeWindowsEvent(Event):
     def process(self):
         # Xử lý khi sự kiện được gọi
         print(
-            f"AGV {self.agv.id} processes TimeWindowsEvent at {self.target_node} at time {self.endTime}"
+            f"AGV {self.agv.id} processes TimeWindowsEvent at {self.target_node} at time {self.end_time}"
         )
         self.getNext(self.graph)

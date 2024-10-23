@@ -18,9 +18,9 @@ allAGVs = {}
 numOfCalling = 0
 
 class Event:
-    def __init__(self, startTime, endTime, agv, graph):
-        self.startTime = int(startTime)
-        self.endTime = int(endTime)
+    def __init__(self, start_time, end_time, agv, graph):
+        self.start_time = int(start_time)
+        self.end_time = int(end_time)
         self.agv = agv
         self.agv.event = self
         self.graph = graph
@@ -60,7 +60,7 @@ class Event:
             print(f"No edge found from {self.start_node} to {self.end_node}")
 
     def __repr__(self):
-        return f"(time=[{self.startTime}, {self.endTime}], agv_id={self.agv.id})"
+        return f"(time=[{self.start_time}, {self.end_time}], agv_id={self.agv.id})"
 
     def getWait(self, wait_time):
         obj = utility()
@@ -159,8 +159,8 @@ class Event:
 
         # Lên lịch cho sự kiện mới
         # new_event.setValue("allAGVs", self.allAGVs)
-        # simulator.schedule(new_event.endTime, new_event.getNext, self.graph)
-        simulator.schedule(new_event.endTime, new_event.process)
+        # simulator.schedule(new_event.end_time, new_event.getNext, self.graph)
+        simulator.schedule(new_event.end_time, new_event.process)
 
     # TODO Rename this here and in `getNext`
     def find_path(self, DimacsFileReader, ForecastingModel):
@@ -188,7 +188,7 @@ class Event:
         elif config.solver_choice == 'networkx':
             nx = NetworkXSolution()
             nx.read_dimac_file('TSG.txt')
-            edges_with_costs = { (int(edge[1]), int(edge[2])): [int(edge[4]), int(edge[5])] for edge in self.graph.graph_processor.spaceEdges \
+            edges_with_costs = { (int(edge[1]), int(edge[2])): [int(edge[4]), int(edge[5])] for edge in self.graph.graph_processor.space_edges \
                 if edge[3] == '0' and int(edge[4]) >= 1 }
             nx.edges_with_costs = edges_with_costs
             nx.M = self.graph.graph_processor.M
@@ -201,7 +201,7 @@ class Event:
             subprocess.run(command, shell=True)
 
         #pdb.set_trace()
-        #print(f"{self} {self.startTime} {self.endTime}")
+        #print(f"{self} {self.start_time} {self.end_time}")
         if self.graph.version == -1 == self.agv.versionOfGraph:
             self.graph.version += 1
         """print(f'{getframeinfo(currentframe()).filename.split("/")[-1]}:{getframeinfo(currentframe()).lineno} {self.agv.id}', end=' ')
@@ -238,7 +238,7 @@ class Event:
 
     def calculateCost(self):
         # Increase cost by the actual time spent in holding
-        cost_increase = self.graph.graph_processor.alpha*(self.endTime - self.startTime)
+        cost_increase = self.graph.graph_processor.alpha*(self.end_time - self.start_time)
         self.agv.cost += cost_increase
         return cost_increase
 
@@ -261,7 +261,7 @@ class Event:
             print(node.id, end= ' ')
         print()"""
         self.graph.setTrace("traces.txt")
-        #if (self.startTime == 0 and self.endTime == 17):
+        #if (self.start_time == 0 and self.end_time == 17):
         #    pdb.set_trace()
         if(self.agv.get_traces() != None):
             #print("Truoc khi gan thi ko None")

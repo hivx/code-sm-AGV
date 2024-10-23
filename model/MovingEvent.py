@@ -6,8 +6,8 @@ from discrevpy import simulator
 from datetime import datetime
 
 class MovingEvent(Event):
-    def __init__(self, startTime, endTime, agv, graph, start_node, end_node):
-        super().__init__(startTime, endTime, agv, graph)
+    def __init__(self, start_time, end_time, agv, graph, start_node, end_node):
+        super().__init__(start_time, end_time, agv, graph)
         #pdb.set_trace()
         self.start_node = start_node
         self.end_node = end_node
@@ -15,7 +15,7 @@ class MovingEvent(Event):
         #print(self)
         M = self.graph.numberOfNodesInSpaceGraph
         t1 = self.start_node // M - (self.graph.graph_processor.d if self.start_node % M == 0 else 0)
-        if(t1 != self.startTime):
+        if(t1 != self.start_time):
             if(self.graph.graph_processor.printOut):
                 print("Errror")
             #pdb.set_trace()
@@ -31,10 +31,10 @@ class MovingEvent(Event):
         space_end_node = self.end_node % M + (M if self.end_node % M == 0 else 0)
         now = datetime.now()
         formatted_time = now.strftime("%j-%m-%y:%H-%M-%S")
-        return f"\t . Now: {formatted_time}. MovingEvent for {self.agv.id} to move from {self.start_node}({space_start_node}) at {self.startTime} and agv reaches {space_end_node} at {self.endTime}"
+        return f"\t . Now: {formatted_time}. MovingEvent for {self.agv.id} to move from {self.start_node}({space_start_node}) at {self.start_time} and agv reaches {space_end_node} at {self.end_time}"
         
     def updateGraph(self):
-        actual_time = self.endTime - self.startTime
+        actual_time = self.end_time - self.start_time
         #pdb.set_trace()
         #if(self.start_node == 10 or self.agv.id == 'AGV10'):
         #    pdb.set_trace()
@@ -44,9 +44,9 @@ class MovingEvent(Event):
         #t1 = self.start_node // M - (self.graph.graph_processor.d if self.start_node % M == 0 else 0)
         t2 = self.end_node // M - (1 if self.end_node % M == 0 else 0)
         t1 = self.start_node // M - (1 if self.start_node % M == 0 else 0)
-        #if(t1 != self.startTime):
+        #if(t1 != self.start_time):
         #    pdb.set_trace()
-        real_end_node = self.endTime*M + (M if self.end_node % M == 0 else self.end_node % M)
+        real_end_node = self.end_time*M + (M if self.end_node % M == 0 else self.end_node % M)
         #if(real_end_node == 2186):
         #    pdb.set_trace()
         #24 09 01
@@ -62,19 +62,19 @@ class MovingEvent(Event):
                     while(True):
                         deltaT = deltaT + 1
                         real_end_node = real_end_node + M*deltaT
-                        if(self.endTime + deltaT < self.graph.graph_processor.H):
+                        if(self.end_time + deltaT < self.graph.graph_processor.H):
                             if(real_end_node in self.graph.nodes):
                                 if(self.graph.nodes[real_end_node].agv is not None):
                                     if (self.graph.nodes[real_end_node].agv.id != self.agv.id):
                                         continue
-                            new_event = MovingEvent(self.startTime, \
-                                self.endTime + deltaT, self.agv, self.graph, self.agv.current_node, real_end_node)
+                            new_event = MovingEvent(self.start_time, \
+                                self.end_time + deltaT, self.agv, self.graph, self.agv.current_node, real_end_node)
                             break
                         else:
-                            new_event = HaltingEvent(self.endTime, \
+                            new_event = HaltingEvent(self.end_time, \
                                 self.graph.graph_processor.H, self.agv, self.graph, self.agv.current_node, real_end_node, deltaT)    
                             break                                    
-                    simulator.schedule(new_event.endTime, new_event.process)
+                    simulator.schedule(new_event.end_time, new_event.process)
                     self.force_quit = True
                     return
                 
@@ -89,7 +89,7 @@ class MovingEvent(Event):
         
         weight_of_edge = t2 - t1
         predicted_time = weight_of_edge or None
-        #if(self.startTime == 682 and self.endTime == 713 and self.agv.id == 'AGV4'):
+        #if(self.start_time == 682 and self.end_time == 713 and self.agv.id == 'AGV4'):
         #    print("Gonna out of range exception")
         #    pdb.set_trace()
         #if(real_end_node == 14987):
@@ -117,7 +117,7 @@ class MovingEvent(Event):
     def calculateCost(self):
         #pdb.set_trace()
         # Tính chi phí dựa trên thời gian di chuyển thực tế
-        cost_increase = self.graph.graph_processor.alpha*(self.endTime - self.startTime)
+        cost_increase = self.graph.graph_processor.alpha*(self.end_time - self.start_time)
         self.agv.cost += cost_increase  # Cập nhật chi phí của AGV
         return cost_increase
 
@@ -133,10 +133,10 @@ class MovingEvent(Event):
             return
         if(self.graph.graph_processor.printOut):
             print(
-                f"AGV {self.agv.id} moves from {self.start_node} to {self.end_node} taking actual time {self.endTime - self.startTime}"
+                f"AGV {self.agv.id} moves from {self.start_node} to {self.end_node} taking actual time {self.end_time - self.start_time}"
                 )
         #pdb.set_trace()
-        #debug = self.startTime == 682 and self.endTime == 713
+        #debug = self.start_time == 682 and self.end_time == 713
         #self.getNext("""debug""")
         #self.getNext()
         self.solve()
@@ -146,4 +146,4 @@ class MovingEvent(Event):
         #    pdb.set_trace()
         #new_event = next_node.getEventForReaching(self)
         new_event = next_node.goToNextNode(self)
-        simulator.schedule(new_event.endTime, new_event.process)
+        simulator.schedule(new_event.end_time, new_event.process)

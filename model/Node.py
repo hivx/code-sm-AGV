@@ -88,8 +88,8 @@ class Node:
             if(not isinstance(event, StartEvent)):
                 event.agv.move_to(event)
             return HoldingEvent(
-                event.endTime,
-                event.endTime + deltaT,
+                event.end_time,
+                event.end_time + deltaT,
                 event.agv,
                 event.graph,
                 deltaT,
@@ -98,7 +98,7 @@ class Node:
             print(f"Target {event.agv.target_node.id}")
             #deltaT = getReal()
             return ReachingTargetEvent(
-                event.endTime, event.endTime, event.agv, event.graph, self.id
+                event.end_time, event.end_time, event.agv, event.graph, self.id
             )
         else:
             """print(f'{self.id}')
@@ -159,7 +159,7 @@ class Node:
             if(next_vertex == -1):
                 pdb.set_trace()
         
-        """edges_with_cost = { (int(edge[1]), int(edge[2])): [int(edge[4]), int(edge[5])] for edge in event.graph.graph_processor.spaceEdges \
+        """edges_with_cost = { (int(edge[1]), int(edge[2])): [int(edge[4]), int(edge[5])] for edge in event.graph.graph_processor.space_edges \
             if edge[3] == '0' and int(edge[4]) >= 1 }
         space_start_node = event.agv.current_node % M + (M if event.agv.current_node % M == 0 else 0)
         space_end_node = next_vertex % M + (M if next_vertex % M == 0 else 0)
@@ -183,27 +183,27 @@ class Node:
             #if(event.agv.id == 'AGV30'):
             #    pdb.set_trace()
             return ReachingTargetEvent(\
-                event.endTime, event.endTime, event.agv, event.graph, next_vertex)
+                event.end_time, event.end_time, event.agv, event.graph, next_vertex)
         if(deltaT == 0):
             #pdb.set_trace()
             pass
-        if event.endTime + deltaT < event.graph.graph_processor.H:
+        if event.end_time + deltaT < event.graph.graph_processor.H:
                 #pdb.set_trace()
             #pdb.set_trace()
             return MovingEvent(
-                event.endTime,
-                event.endTime + deltaT,
+                event.end_time,
+                event.end_time + deltaT,
                 event.agv,
                 event.graph,
                 event.agv.current_node,
                 next_vertex,
             )
         if(event.graph.graph_processor.printOut):
-            print(f"H = {event.graph.graph_processor.H} and {event.endTime} + {deltaT}")
+            print(f"H = {event.graph.graph_processor.H} and {event.end_time} + {deltaT}")
             #pdb.set_trace()
         #pdb.set_trace()
         return HaltingEvent(
-            event.endTime,
+            event.end_time,
             event.graph.graph_processor.H,
             event.agv,
             event.graph,

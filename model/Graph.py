@@ -64,14 +64,14 @@ class Graph:
                     #pdb.set_trace()
                     break
             agv.path.add(start_id)
-        startTime = start_id // M - (1 if start_id % M == 0 else 0)
-        endTime = next_id // M - (1 if next_id % M == 0 else 0)
+        start_time = start_id // M - (1 if start_id % M == 0 else 0)
+        end_time = next_id // M - (1 if next_id % M == 0 else 0)
         space_start_node = start_id % M + (M if start_id % M == 0 else 0)
         space_end_node = next_id % M + (M if next_id % M == 0 else 0)
-        edges_with_cost = { (int(edge[1]), int(edge[2])): [int(edge[4]), int(edge[5])] for edge in self.graph_processor.spaceEdges \
+        edges_with_cost = { (int(edge[1]), int(edge[2])): [int(edge[4]), int(edge[5])] for edge in self.graph_processor.space_edges \
             if edge[3] == '0' and int(edge[4]) >= 1 }
         min_moving_time = edges_with_cost.get((space_start_node, space_end_node), [-1, -1])[1]
-        endTime = max(endTime, startTime + min_moving_time)
+        end_time = max(end_time, start_time + min_moving_time)
         allIDsOfTargetNodes = [node.id for node in self.graph_processor.targetNodes]
         if(next_id in allIDsOfTargetNodes):
             #pdb.set_trace()
@@ -81,26 +81,26 @@ class Graph:
         try:
             if isinstance(self.nodes[next_id], TimeWindowNode):
                 #pdb.set_trace()
-                result = (endTime - startTime) if result == -1 else result
+                result = (end_time - start_time) if result == -1 else result
         except:
             if next_id not in self.nodes:
                 #print(f'in self.nodes doesnt have {next_id}')
-                for e in self.graph_processor.tsEdges:
+                for e in self.graph_processor.ts_edges:
                     if(e[0] % M == start_id % M and e[1] % M == next_id % M):
                         #pdb.set_trace()
                         result = e[4] if result == -1 else result
                 #pdb.set_trace()
-                result = abs(endTime - startTime) if result == -1 else result
+                result = abs(end_time - start_time) if result == -1 else result
         #pdb.set_trace()
         
         
         if config.sfm == True:
-            #print(f"Using sfm for AGV {agv.id} from {start_id} to {next_id} at time {startTime}.")
-            result = self.getAGVRuntime(config.filepath, config.functions_file, space_start_node, space_end_node, agv, startTime)
+            #print(f"Using sfm for AGV {agv.id} from {start_id} to {next_id} at time {start_time}.")
+            result = self.getAGVRuntime(config.filepath, config.functions_file, space_start_node, space_end_node, agv, start_time)
             if result != -1:
-                print(f"AGV {agv.id} from {space_start_node} to {space_end_node} at time {startTime} has runtime {result}.")
+                print(f"AGV {agv.id} from {space_start_node} to {space_end_node} at time {start_time} has runtime {result}.")
                 return result
-        result = (3 if (endTime - startTime <= 3) else 2*(endTime - startTime) - 3) if result == -1 else result
+        result = (3 if (end_time - start_time <= 3) else 2*(end_time - start_time) - 3) if result == -1 else result
         collision = True
         #pdb.set_trace()
         while(collision):
@@ -422,7 +422,7 @@ class Graph:
         self.visited = set()
         #self.id2_id4_list = []
         self.map = {}
-        edges_with_cost = { (int(edge[1]), int(edge[2])): [int(edge[4]), int(edge[5])] for edge in self.graph_processor.spaceEdges \
+        edges_with_cost = { (int(edge[1]), int(edge[2])): [int(edge[4]), int(edge[5])] for edge in self.graph_processor.space_edges \
             if edge[3] == '0' and int(edge[4]) >= 1 }
         M = self.graph_processor.M
         #pdb.set_trace()

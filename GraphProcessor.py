@@ -50,7 +50,7 @@ class GraphProcessor:
         
     @property
     def target_nodes(self):
-        return self._targetNodes
+        return self._target_nodes
     
     @target_nodes.setter
     def target_nodes(self, value):
@@ -60,15 +60,15 @@ class GraphProcessor:
         if isinstance(target_node, TimeWindowNode):
             #pdb.set_trace()
             pass
-        self._targetNodes.append(target_node)
+        self._target_nodes.append(target_node)
         
     def get_targets(self, index = -1):
         if (index != -1):
-            return self._targetNodes[index]
-        return self._targetNodes
+            return self._target_nodes[index]
+        return self._target_nodes
     
     def get_target_by_id(self, id):
-        for node in self._targetNodes:
+        for node in self._target_nodes:
             if(node.id == id):
                 return node
         return None
@@ -82,11 +82,11 @@ class GraphProcessor:
                     parts = line.strip().split()
                     if parts[0] == 'a' and len(parts) >= 6:
                         id1, id2 = int(parts[1]), int(parts[2])
-                        self.spaceEdges.append(parts)
+                        self.space_edges.append(parts)
                         self.M = max(self.M, id1, id2)
                     elif parts[0] == 'n':
                         if(parts[2] == '1'):
-                            self.startedNodes.append(int(parts[1]))
+                            self.started_nodes.append(int(parts[1]))
                         if(parts[2] == '-1'):
                             self.ID.append(int(parts[1]))
                             if isinstance(self.earliness, int):
@@ -126,7 +126,7 @@ class GraphProcessor:
             # Nếu không có trên mapNodes, thêm vào cả ts_nodes và mapNodes
             #if(id == 26272):
             #    pdb.set_trace()
-            for node in self._targetNodes:
+            for node in self._target_nodes:
                 if(node.id == _id):
                     self.mapNodes[_id] = node
                     return node
@@ -151,7 +151,7 @@ class GraphProcessor:
         size = (self.H + 1) * self.M + 1
         self.adj = lil_matrix((2*size, 2*size), dtype=int)
 
-        for edge in self.spaceEdges:
+        for edge in self.space_edges:
             if len(edge) >= 6 and edge[3] == '0' and int(edge[4]) >= 1:
                 u, v, c = int(edge[1]), int(edge[2]), int(edge[5])
                 for i in range(self.H + 1):
@@ -224,7 +224,7 @@ class GraphProcessor:
     def insert_from_queue(self, Q, checking_list = None):
         #pdb.set_trace()
         output_lines = []
-        edges_with_cost = { (int(edge[1]), int(edge[2])): [int(edge[4]), int(edge[5])] for edge in self.spaceEdges \
+        edges_with_cost = { (int(edge[1]), int(edge[2])): [int(edge[4]), int(edge[5])] for edge in self.space_edges \
             if edge[3] == '0' and int(edge[4]) >= 1 }
         ts_edges = self.ts_edges if checking_list == None else \
             [[item[1].start_node.id, item[1].end_node.id] for sublist in checking_list.values() for item in sublist]
@@ -269,7 +269,7 @@ class GraphProcessor:
                         else:
                             output_lines.append(f"a {ID} {j} 0 {upper} {c}")
                         if(checking_list == None):
-                            self.tsEdges.append((ID, j, 0, upper, c))
+                            self.ts_edges.append((ID, j, 0, upper, c))
                         self.check_and_add_nodes([ID, j])
                         #    pdb.set_trace()
                             #print()
@@ -277,7 +277,7 @@ class GraphProcessor:
                     elif ID + self.M * self.d == j and ID % self.M == j % self.M:
                         output_lines.append(f"a {ID} {j} 0 1 {self.d}")
                         if(checking_list == None):
-                            self.tsEdges.append((ID, j, 0, 1, self.d))
+                            self.ts_edges.append((ID, j, 0, 1, self.d))
                         self.check_and_add_nodes([ID, j])
                         #self.ts_edges.append(HoldingEdge(self.find_node(ID), self.find_node(j), self.d, self.d))
                         temp = self.find_node(ID).create_edge(self.find_node(j), self.M, self.d, [ID, j, 0, 1, self.d])
@@ -292,7 +292,7 @@ class GraphProcessor:
                         if(checking_list == None):
                             self.ts_edges.append(temp)
         if(checking_list == None):
-            assert len(self.tsEdges) == len(self.ts_edges), f"Thiếu cạnh ở đâu đó rồi {len(self.tsEdges)} != {len(self.ts_edges)}"
+            assert len(self.ts_edges) == len(self.ts_edges), f"Thiếu cạnh ở đâu đó rồi {len(self._edges)} != {len(self.ts_edges)}"
         return output_lines
 
     def create_tsg_file(self):          
@@ -431,7 +431,7 @@ class GraphProcessor:
                             Q.append(j)
                             visited.add(j)
                             
-            edges_with_cost = { (int(edge[1]), int(edge[2])): [int(edge[4]), int(edge[5])] for edge in self.spaceEdges \
+            edges_with_cost = { (int(edge[1]), int(edge[2])): [int(edge[4]), int(edge[5])] for edge in self.space_edges \
                        if edge[3] == '0' and int(edge[4]) >= 1 }
             with open('TSG.txt', 'a') as file:
                 for ID, j, c in new_edges:
@@ -478,7 +478,7 @@ class GraphProcessor:
         end_ban = self.endBan #16, 30  # Giả sử giá trị cố định cho ví dụ này
         
         edges_with_cost = { (int(edge[1]), int(edge[2])): int(edge[5]) \
-                           for edge in self.spaceEdges if edge[3] == '0' and int(edge[4]) >= 1 }
+                           for edge in self.space_edges if edge[3] == '0' and int(edge[4]) >= 1 }
         max = self.getMaxID() + 1
         # Xác định các điểm bị cấm
         for restriction in self.restrictions:
@@ -496,14 +496,14 @@ class GraphProcessor:
                 self.adj[edge[0], edge[1]] = 0
 
             # Xử lý các cung cấm
-            #for edge in self.spaceEdges:
+            #for edge in self.space_edges:
                 #ID1, ID2 = int(edge[1]), int(edge[2])
                 #t1, u, v, t2 = ID1 // self.M, ID1 % self.M, ID2 % self.M, ID2 // self.M
                 #if (u in S and v in S):
                     #if ((t1 <= endBan and endBan <= t2) or (t1 <= startBan and startBan <= t2) or (t1 <= startBan and endBan <= t2)):
                         #R.add((ID1, ID2))
-            assert len(self.tsEdges) == len(self.ts_edges), f"Thiếu cạnh ở đâu đó rồi {len(self.tsEdges)} != {len(self.ts_edges)}"
-            self.ts_edges = [e for e in self.tsEdges if [e[0], e[1]] not in [r[:2] for r in R]]
+            assert len(self._edges) == len(self.ts_edges), f"Thiếu cạnh ở đâu đó rồi {len(self.ts_edges)} != {len(self.ts_edges)}"
+            self.ts_edges = [e for e in self._edges if [e[0], e[1]] not in [r[:2] for r in R]]
             size1 = len(self.ts_edges)
             self.ts_edges = [e for e in self.ts_edges if [e.start_node.id, e.end_node.id] not in [r[:2] for r in R]]
             size2 = len(self.ts_edges)
@@ -526,10 +526,10 @@ class GraphProcessor:
                     e4 = (e[0], a_s, 0, 1, 0)
                     e5 = (a_t, e[1], 0, 1, e[2])
                     new_a.update({e4, e5})
-            self.tsEdges.extend(e for e in new_a if e not in self.tsEdges)
+            self.ts_edges.extend(e for e in new_a if e not in self.ts_edges)
             self.create_set_of_edges(new_a)
-            assert len(self.tsEdges) == len(self.ts_edges), f"Thiếu cạnh ở đâu đó rồi {len(self.tsEdges)} != {len(self.ts_edges)}"
-        self.ts_edges = sorted(self.tsEdges, key=lambda edge: (edge[0], edge[1]))
+            assert len(self.ts_edges) == len(self.ts_edges), f"Thiếu cạnh ở đâu đó rồi {len(self.ts_edges)} != {len(self.ts_edges)}"
+        self.ts_edges = sorted(self.ts_edges, key=lambda edge: (edge[0], edge[1]))
         #pdb.set_trace()
         #halting_nodes = 
         self.insert_halting_edges()
@@ -552,13 +552,13 @@ class GraphProcessor:
             for target in targets:
                 e = (h_node, target.id, 0, 1, self.H*self.H)
                 new_a.update({e})
-        self.tsEdges.extend(e for e in new_a if e not in self.tsEdges)
+        self.ts_edges.extend(e for e in new_a if e not in self.ts_edges)
         self.create_set_of_edges(new_a)
     
     def write_to_file(self, max, filename = "TSG.txt"):
         M = max(target.id for target in self.getTargets())
         with open('TSG.txt', 'w') as file:
-            file.write(f"p min {M} {len(self.tsEdges)}\n")
+            file.write(f"p min {M} {len(self.ts_edges)}\n")
             for start in self.startedNodes:
                 file.write(f"n {start} 1\n")
             for target in self.getTargets():
@@ -668,7 +668,7 @@ class GraphProcessor:
         #pdb.set_trace()
         count = 0
         #self.tsEdges.update(e for e in new_edges if e not in self.tsEdges)
-        self.tsEdges.extend(e for e in new_edges if e not in self.tsEdges)
+        self.ts_edges.extend(e for e in new_edges if e not in self.ts_edges)
         self.create_set_of_edges(new_edges)
         # Ghi các cung mới vào file TSG.txt
         with open('TSG.txt', 'a') as file:
@@ -1048,7 +1048,7 @@ class GraphProcessor:
             else:
                 pass
             self.add_time_windows_constraints()
-            assert len(self.tsEdges) == len(self.ts_edges), f"Thiếu cạnh ở đâu đó rồi {len(self.tsEdges)} != {len(self.ts_edges)}"
+            assert len(self.ts_edges) == len(self.ts_edges), f"Thiếu cạnh ở đâu đó rồi {len(self.ts_edges)} != {len(self.ts_edges)}"
             count += 1
         #self.add_restrictions()
         self.gamma = 1

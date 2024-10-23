@@ -97,14 +97,14 @@ while(config.count < 2):
     # #pdb.set_trace()
     # assert (len(graph.nodes) == len(graph_processor.ts_nodes)), f"Missing some nodes elsewhere as {len(graph.nodes)} != {len(graph_processor.ts_nodes)}"
     
-    events = sorted(events, key=lambda x: x.startTime)
+    events = sorted(events, key=lambda x: x.start_time)
     Event.setValue("allAGVs", allAGVs)
     
     
     def schedule_events(events):
         for event in events:
             #pdb.set_trace()
-            simulator.schedule(event.startTime, event.process)
+            simulator.schedule(event.start_time, event.process)
     
     def reset(simulator):
         config.totalCost = 0

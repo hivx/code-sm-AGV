@@ -31,7 +31,7 @@ class TimeWindowNode(Node):
             print(f"Target {event.agv.target_node.id}")
             #deltaT = getReal()
             return ReachingTargetEvent(
-                event.endTime, event.endTime, event.agv, event.graph, self.id
+                event.end_time, event.end_time, event.agv, event.graph, self.id
             )
         return None
     

@@ -3,8 +3,8 @@ import pdb
 import config
 from .AGV import AGV
 class ReachingTargetEvent(Event):
-    def __init__(self, startTime, endTime, agv, graph, target_node):
-        super().__init__(startTime, endTime, agv, graph)
+    def __init__(self, start_time, end_time, agv, graph, target_node):
+        super().__init__(start_time, end_time, agv, graph)
         self.target_node = target_node
         #pdb.set_trace()
         #if(target_node not in self.graph.nodes):
@@ -25,10 +25,10 @@ class ReachingTargetEvent(Event):
                 #pdb.set_trace()
         self.earliness = node.earliness
         self.tardiness = node.tardiness
-        #if(self.endTime != time):
+        #if(self.end_time != time):
         #if(self.agv.id == 'AGV4'):
         #pdb.set_trace()
-        t1 = [self.earliness - self.endTime, 0, self.endTime - self.tardiness]
+        t1 = [self.earliness - self.end_time, 0, self.end_time - self.tardiness]
         
         self.last_cost = self.graph.graph_processor.beta*(max(t1))/self.graph.graph_processor.alpha
         #print(f'{t1} {max(t1)} last_cost {self.last_cost}')
@@ -124,12 +124,12 @@ class ReachingTargetEvent(Event):
             prev = path[i]
         dest = path[-2]
         real_dest = M if dest % M == 0 else dest % M
-        print(f'Total cost: {cost}. The AGV reaches its destination: {real_dest} at {self.endTime} along with earliness = {self.earliness} and tardiness = {self.tardiness}')
+        print(f'Total cost: {cost}. The AGV reaches its destination: {real_dest} at {self.end_time} along with earliness = {self.earliness} and tardiness = {self.tardiness}')
     def process(self):
         if(self.graph.graph_processor.printOut):
             # Đây là phương thức để xử lý khi AGV đạt đến mục tiêu
             print(
-                f"AGV {self.agv.id} has reached the target node {self.target_node} at time {self.endTime}"
+                f"AGV {self.agv.id} has reached the target node {self.target_node} at time {self.end_time}"
                 )
         #pdb.set_trace()
         #print(self.agv.path)
@@ -144,4 +144,4 @@ class ReachingTargetEvent(Event):
         del self.agv
     
     def __str__(self):
-        return f"ReachingTargetEvent for {self.agv.id} at time: {self.endTime} and it reaches the artificial node {self.target_node}"
+        return f"ReachingTargetEvent for {self.agv.id} at time: {self.end_time} and it reaches the artificial node {self.target_node}"
