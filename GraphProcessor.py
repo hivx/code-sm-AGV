@@ -322,7 +322,7 @@ class GraphProcessor:
             all_agvs.add(agv)  # Thêm vào tập hợp AGV
     
     def init_tasks(self, tasks):
-        for node_id in self.getTargets():
+        for node_id in self.get_targets():
             tasks.add(node_id)
     
     def query_edges_by_source_id(self):
@@ -546,7 +546,7 @@ class GraphProcessor:
             #    pdb.set_trace()
             if(time >= self.H):
                 halting_nodes.add(edge.end_node.id)
-        targets = self.getTargets()
+        targets = self.get_targets()
         new_a = set()
         for h_node in halting_nodes:
             for target in targets:
@@ -556,12 +556,12 @@ class GraphProcessor:
         self.create_set_of_edges(new_a)
     
     def write_to_file(self, max, filename = "TSG.txt"):
-        M = max(target.id for target in self.getTargets())
+        M = max(target.id for target in self.get_targets())
         with open('TSG.txt', 'w') as file:
             file.write(f"p min {M} {len(self.ts_edges)}\n")
             for start in self.started_nodes:
                 file.write(f"n {start} 1\n")
-            for target in self.getTargets():
+            for target in self.get_targets():
                 target_id = target.id
                 file.write(f"n {target_id} -1\n")
             #for edge in self.ts_edges:

@@ -704,11 +704,11 @@ class Graph:
                 t = edge[0] // self.graph_processor.M - (1 if edge[0] % self.graph_processor.M == 0 else 0)
                 if(t >= self.graph_processor.H and edge[0] not in new_nodes and isinstance(self.nodes[edge[0]], TimeoutNode)):
                     new_nodes.add(edge[0])
-                    L = len(self.graph_processor.getTargets())
+                    L = len(self.graph_processor.get_targets())
                     if(L == 0):
                         pdb.set_trace()
-                        targets = self.graph_processor.getTargets()
-                    for target in self.graph_processor.getTargets():
+                        targets = self.graph_processor.get_targets()
+                    for target in self.graph_processor.get_targets():
                         dest_id = target.id
                         """anEdge = self.nodes[edge[0]].create_edge(self.nodes[dest_id], \
                             self.graph_processor.M, self.graph_processor.d, [edge[0], \
@@ -789,7 +789,7 @@ class Graph:
         #print("Call write_to_file of Graph.py")
         #if(config.count == 2):
         #    pdb.set_trace()
-        M = max(target.id for target in self.graph_processor.getTargets())
+        M = max(target.id for target in self.graph_processor.get_targets())
         m1 = max(edge[1] for edge in new_halting_edges)
         M = max(M, m1)
         num_halting_edges = len(new_halting_edges) if new_halting_edges is not None else 0
@@ -824,11 +824,11 @@ class Graph:
             #if(started_nodes == buggySet1 or started_nodes == buggySet2):
             #    #print(f'Graph.py:566 {started_nodes}')
             #    pdb.set_trace()
-            #if(len(started_nodes) != len(self.graph_processor.getTargets())):
+            #if(len(started_nodes) != len(self.graph_processor.get_targets())):
             #    pdb.set_trace()
             for start_node in started_nodes:
                 file.write(f"n {start_node} 1\n")
-            for target in self.graph_processor.getTargets():
+            for target in self.graph_processor.get_targets():
                 target_id = target.id
                 file.write(f"n {target_id} -1\n")
             #for edge in self.ts_edges:
