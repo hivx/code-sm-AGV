@@ -116,19 +116,19 @@ class GraphProcessor:
         new_node = Node(id)
         self.ts_nodes.append(new_node)
         return new_node"""
-        if not hasattr(self, 'mapNodes'):
-            # Nếu chưa tồn tại, chuyển self.ts_nodes thành self.mapNodes
+        if not hasattr(self, 'map_nodes'):
+            # Nếu chưa tồn tại, chuyển self.ts_nodes thành self.map_nodes
             self.map_nodes = {node.id: node for node in self.ts_nodes}
-        # Tìm kiếm trên self.mapNodes
-        if _id in self.mapNodes:
-            return self.mapNodes[_id]
+        # Tìm kiếm trên self.map_nodes
+        if _id in self.map_nodes:
+            return self.map_nodes[_id]
         else:
-            # Nếu không có trên mapNodes, thêm vào cả ts_nodes và mapNodes
+            # Nếu không có trên map_nodes, thêm vào cả ts_nodes và map_nodes
             #if(id == 26272):
             #    pdb.set_trace()
             for node in self._target_nodes:
                 if(node.id == _id):
-                    self.mapNodes[_id] = node
+                    self.map_nodes[_id] = node
                     return node
             time = _id // self.M - (1 if _id % self.M == 0 else 0)
             new_node = None
@@ -137,7 +137,7 @@ class GraphProcessor:
             else:
                 new_node = Node(_id)
             self.ts_nodes.append(new_node)
-            self.mapNodes[_id] = new_node
+            self.map_nodes[_id] = new_node
             
             return new_node
 	
@@ -181,8 +181,8 @@ class GraphProcessor:
             print("Cac cap chi so (i,j) khac 0 cua Adjacency matrix duoc luu tai adj_matrix.txt.")
 
     def check_and_add_nodes(self, args, is_artificial_node = False, label = ""):
-        if not hasattr(self, 'mapNodes'):
-            # Nếu chưa tồn tại, chuyển self.ts_nodes thành self.mapNodes
+        if not hasattr(self, 'map_nodes'):
+            # Nếu chưa tồn tại, chuyển self.ts_nodes thành self.map_nodes
             self.map_nodes = {node.id: node for node in self.ts_nodes}
         for id in args:
             # Ensure that Node objects for id exist in ts_nodes
@@ -191,19 +191,19 @@ class GraphProcessor:
                    if(label == "TimeWindow"):
                        temp = TimeWindowNode(id, label)
                        self.ts_nodes.append(temp)
-                       self.mapNodes[id] = temp
+                       self.map_nodes[id] = temp
                    elif(label == "Restriction"):
                        temp = RestrictionNode(id, label)
                        self.ts_nodes.append(temp)
-                       self.mapNodes[id] = temp
+                       self.map_nodes[id] = temp
                    elif (label == "Timeout"):
                        temp = TimeoutNode(id, label)
                        self.ts_node.append(temp)
-                       self.mapNodes[id] = temp
+                       self.map_nodes[id] = temp
                    else:
                        temp = ArtificialNode(id, label)
                        self.ts_nodes.append(temp)
-                       self.mapNodes[id] = temp
+                       self.map_nodes[id] = temp
                 else:
                     time = id // self.M - (1 if id % self.M == 0 else 0)
                     temp = None
@@ -212,7 +212,7 @@ class GraphProcessor:
                     else:
                         temp = Node(id)
                     self.ts_nodes.append(temp)
-                    self.mapNodes[id] = temp
+                    self.map_nodes[id] = temp
         #    self.ts_nodes.append(Node(ID2))
 
     def show(self, Q):
