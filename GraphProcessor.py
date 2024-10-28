@@ -474,7 +474,7 @@ class GraphProcessor:
         new_a = set()
         if(self.restriction_controller == None):
             self.restriction_controller = RestrictionController(self)
-        start_ban = self._ban
+        start_ban = self.start_ban
         end_ban = self.end_ban #16, 30  # Giả sử giá trị cố định cho ví dụ này
         
         edges_with_cost = { (int(edge[1]), int(edge[2])): int(edge[5]) \
