@@ -621,7 +621,7 @@ class GraphProcessor:
         target_node = TimeWindowNode(max_val, "TimeWindow")
         self.ts_nodes.append(target_node)
         #self.target_nodes.append(targetNode)
-        self.appendTarget(target_node)
+        self.append_target(target_node)
         if(self.time_window_controller == None):
             self.time_window_controller = TimeWindowController(self.alpha, self.beta, self.gamma, self.d, self.H)
         ID = -1
