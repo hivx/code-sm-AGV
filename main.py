@@ -90,7 +90,7 @@ while(config.count < 2):
     numberOfNodesInSpaceGraph = Event.getValue("numberOfNodesInSpaceGraph")
     # Mở file để đọc
     #pdb.set_trace()
-    graph_processor.init_AGVs_n_events(allAGVs, events, graph)
+    graph_processor.init_agvs_n_events(allAGVs, events, graph)
     graph_processor.init_TASKs(TASKS)
     graph_processor.init_nodes_n_edges(graph)
     # assert (graph.count_edges() == len(graph_processor.tsedges)), "Missing some edges elsewhere"

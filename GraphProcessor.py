@@ -479,7 +479,7 @@ class GraphProcessor:
         
         edges_with_cost = { (int(edge[1]), int(edge[2])): int(edge[5]) \
                            for edge in self.space_edges if edge[3] == '0' and int(edge[4]) >= 1 }
-        max = self.get_max_id() + 1
+        Max = self.get_max_id() + 1
         # Xác định các điểm bị cấm
         for restriction in self.restrictions:
             R = []
@@ -555,7 +555,7 @@ class GraphProcessor:
         self.ts_edges.extend(e for e in new_a if e not in self.ts_edges)
         self.create_set_of_edges(new_a)
     
-    def write_to_file(self, max, filename = "TSG.txt"):
+    def write_to_file(self, Max, filename = "TSG.txt"):
         M = max(target.id for target in self.get_targets())
         with open('TSG.txt', 'w') as file:
             file.write(f"p min {M} {len(self.ts_edges)}\n")
