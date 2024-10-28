@@ -267,7 +267,7 @@ class Event:
             #print("Truoc khi gan thi ko None")
             pass
         temp = self.graph.getTrace(self.agv) 
-        allIDsOfTargetNodes = [node.id for node in self.graph.graph_processor.targetNodes]
+        allIDsOfTargetNodes = [node.id for node in self.graph.graph_processor.target_nodes]
         #self.agv.set_traces(temp if temp != None else self.agv.get_traces())
         if temp != None:
             while(temp[-1].id not in allIDsOfTargetNodes):

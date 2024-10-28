@@ -8,7 +8,7 @@ class RestrictionEdge(Edge):
         """current_frame = inspect.currentframe()
         # Lấy tên của hàm gọi my_function
         caller_name = inspect.getframeinfo(current_frame.f_back).function
-        #if(self.graph.graph_processor.printOut):
+        #if(self.graph.graph_processor.print_out):
         print(f'RestrictionEdge.py:12 {caller_name}')"""
 
     def make_permanent(self):

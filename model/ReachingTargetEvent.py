@@ -42,7 +42,7 @@ class ReachingTargetEvent(Event):
                     cost = self.graph.beta*(max([earliness - time, 0, time - tardiness]))
                     self.last_cost = cost
                     break"""
-        if(self.graph.graph_processor.printOut):
+        if(self.graph.graph_processor.print_out):
             print(f"Last cost: {self.last_cost}")
         self.updateGraph()  # Optional: update the graph if necessary
         #print(self)
@@ -53,10 +53,10 @@ class ReachingTargetEvent(Event):
         if(self.agv.path[-1] != self.target_node):
             self.target_node = self.agv.path[-1]
             pdb.set_trace()
-        new_target_nodes = [node for node in self.graph.graph_processor.targetNodes if node.id != self.target_node]
-        if(len(new_target_nodes) != len(self.graph.graph_processor.targetNodes) - 1):
+        new_target_nodes = [node for node in self.graph.graph_processor.target_nodes if node.id != self.target_node]
+        if(len(new_target_nodes) != len(self.graph.graph_processor.target_nodes) - 1):
             pdb.set_trace()
-        self.graph.graph_processor.targetNodes = new_target_nodes
+        self.graph.graph_processor.target_nodes = new_target_nodes
         for source_id in self.graph.graph_processor.time_window_controller.TWEdges:
             if(self.graph.graph_processor.time_window_controller.TWEdges[source_id] is not None):
                 edges = self.graph.graph_processor.time_window_controller.TWEdges[source_id]
@@ -82,15 +82,15 @@ class ReachingTargetEvent(Event):
                 # Calculate cost based on the weight of the last edge
                 cost_increase = last_edge_weight
                 self.agv.update_cost(cost_increase)
-                if(self.graph.graph_processor.printOut):
+                if(self.graph.graph_processor.print_out):
                     print(
                         f"Cost for reaching target node {self.target_node} is based on last edge weight: {cost_increase}."
                     )
             else:
-                if(self.graph.graph_processor.printOut):
+                if(self.graph.graph_processor.print_out):
                     print("No last edge found; no cost added.")
         else:
-            if(self.graph.graph_processor.printOut):
+            if(self.graph.graph_processor.print_out):
                 print("Previous node or target node not set; no cost calculated.")
         return self.agv.cost
 
@@ -126,7 +126,7 @@ class ReachingTargetEvent(Event):
         real_dest = M if dest % M == 0 else dest % M
         print(f'Total cost: {cost}. The AGV reaches its destination: {real_dest} at {self.end_time} along with earliness = {self.earliness} and tardiness = {self.tardiness}')
     def process(self):
-        if(self.graph.graph_processor.printOut):
+        if(self.graph.graph_processor.print_out):
             # Đây là phương thức để xử lý khi AGV đạt đến mục tiêu
             print(
                 f"AGV {self.agv.id} has reached the target node {self.target_node} at time {self.end_time}"

@@ -30,7 +30,7 @@ class Graph:
         self.adjacency_list = {node.id: [] for node in graph_processor.ts_nodes}
         #self.nodes = self.graph_processor.ts_nodes
         #self.lastChangedByAGV = -1
-        #self.edges = self.graph_processor.ts_edges
+        #self.edges = self.graph_processor.tsedges
         #self.nodes = {}
         #self.adjacency_list = {}
         self.list1 = []
@@ -72,7 +72,7 @@ class Graph:
             if edge[3] == '0' and int(edge[4]) >= 1 }
         min_moving_time = edges_with_cost.get((space_start_node, space_end_node), [-1, -1])[1]
         end_time = max(end_time, start_time + min_moving_time)
-        allIDsOfTargetNodes = [node.id for node in self.graph_processor.targetNodes]
+        allIDsOfTargetNodes = [node.id for node in self.graph_processor.target_nodes]
         if(next_id in allIDsOfTargetNodes):
             #pdb.set_trace()
             if(agv is not None):
@@ -394,9 +394,9 @@ class Graph:
                         id3 = node3.id
                         self.neighbour_list[id1] = id2
                         self.neighbour_list[id3] = id4
-                        #print(self.graph_processor.startedNodes)
+                        #print(self.graph_processor.started_nodes)
                         #pdb.set_trace()
-                        if(node1.id in self.graph_processor.startedNodes or\
+                        if(node1.id in self.graph_processor.started_nodes or\
                             node1.agv is not None):
                             #pdb.set_trace()
                             self.list1.append(node1.id)
@@ -627,7 +627,7 @@ class Graph:
             #    #pdb.set_trace()
             #    pass
             isContinued = False
-            for node in self.graph_processor.targetNodes:
+            for node in self.graph_processor.target_nodes:
                 if node.id == source_id:
                     isContinued = True
                     break
@@ -649,8 +649,8 @@ class Graph:
                         try:
                             if new_source_id in self.nodes:
                                 self.nodes[new_source_id].agv = self.nodes[source_id].agv
-                            index = self.graph_processor.startedNodes.index(source_id)  # Tìm vị trí của phần tử x
-                            self.graph_processor.startedNodes[index] = new_source_id  # Thay thế phần tử x bằng phần tử y
+                            index = self.graph_processor.started_nodes.index(source_id)  # Tìm vị trí của phần tử x
+                            self.graph_processor.started_nodes[index] = new_source_id  # Thay thế phần tử x bằng phần tử y
                         except ValueError:
                             #print(f"Phần tử {source_id} không tồn tại trong danh sách.")
                             pass
@@ -725,7 +725,7 @@ class Graph:
             if node.id not in self.nodes:
                 self.nodes[node.id] = node
         
-        for edge in self.graph_processor.ts_edges:
+        for edge in self.graph_processor.tsedges:
             source_id = edge.start_node.id
             end_id = edge.end_node.id
             if source_id not in self.adjacency_list or [end_id, edge] not in self.adjacency_list[source_id]:
@@ -773,16 +773,16 @@ class Graph:
                     allAGVs.add(self.nodes[id].agv)
                 elif any(agv.id == self.nodes[id].agv.id for agv in allAGVs):
                     allAGVs.add(self.nodes[id].agv)"""
-        startedNodes = set()
+        started_nodes = set()
         from .ReachingTargetEvent import ReachingTargetEvent
         for agv in allAGVs:
             if(not isinstance(agv.event, ReachingTargetEvent)):
                 #if(len(agv.path) > 0):
-                # #    startedNodes.append(agv.path[-1])
-                startedNodes.add(agv.current_node)
-        if(len(startedNodes) == 0):
-            return self.graph_processor.startedNodes
-        return startedNodes
+                # #    started_nodes.append(agv.path[-1])
+                started_nodes.add(agv.current_node)
+        if(len(started_nodes) == 0):
+            return self.graph_processor.started_nodes
+        return started_nodes
         
     def write_to_file(self, agv_id_and_new_start = None, new_halting_edges = None, filename="TSG.txt"):
         #self.calling = self.calling + 1rite
@@ -810,7 +810,7 @@ class Graph:
             file.write(f"p min {M} {num_edges}\n")
             """if(Max == 8161 and num_edges == 13865):
                 pdb.set_trace()
-            for start in self.graph_processor.startedNodes:
+            for start in self.graph_processor.started_nodes:
                 #pdb.set_trace()
                 start_node = self.get_current_node(agv_id_and_new_start, start)
                 #if(start_node == 24):
@@ -818,21 +818,21 @@ class Graph:
             #if(self.calling == 6):
             #    pdb.set_trace()
             
-            startedNodes = self.getAllNewStartedNodes()
+            started_nodes = self.getAllNewStartedNodes()
             #buggySet1 = {43075, 42060}
             #buggySet2 = {41988, 42060}
-            #if(startedNodes == buggySet1 or startedNodes == buggySet2):
-            #    #print(f'Graph.py:566 {startedNodes}')
+            #if(started_nodes == buggySet1 or started_nodes == buggySet2):
+            #    #print(f'Graph.py:566 {started_nodes}')
             #    pdb.set_trace()
-            #if(len(startedNodes) != len(self.graph_processor.getTargets())):
+            #if(len(started_nodes) != len(self.graph_processor.getTargets())):
             #    pdb.set_trace()
-            for start_node in startedNodes:
+            for start_node in started_nodes:
                 file.write(f"n {start_node} 1\n")
             for target in self.graph_processor.getTargets():
                 target_id = target.id
                 file.write(f"n {target_id} -1\n")
-            #for edge in self.tsEdges:
             #for edge in self.ts_edges:
+            #for edge in self.tsedges:
             new_nodes = set()
             for source_id, edges in sorted_edges:
                 for edge in edges:

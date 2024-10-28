@@ -71,10 +71,10 @@ while(config.count < 2):
     start_time = time.time()
     graph_processor.use_in_main(config.count != 1)
     end_time = time.time()
-    graph_processor.printOut = False
+    graph_processor.print_out = False
     # Tính thời gian thực thi
     execution_time = end_time - start_time
-    if(execution_time >= 5 and graph_processor.printOut):
+    if(execution_time >= 5 and graph_processor.print_out):
         print(f"Thời gian thực thi: {execution_time} giây")
     
     
@@ -93,7 +93,7 @@ while(config.count < 2):
     graph_processor.init_AGVs_n_events(allAGVs, events, graph)
     graph_processor.init_TASKs(TASKS)
     graph_processor.init_nodes_n_edges(graph)
-    # assert (graph.count_edges() == len(graph_processor.ts_edges)), "Missing some edges elsewhere"
+    # assert (graph.count_edges() == len(graph_processor.tsedges)), "Missing some edges elsewhere"
     # #pdb.set_trace()
     # assert (len(graph.nodes) == len(graph_processor.ts_nodes)), f"Missing some nodes elsewhere as {len(graph.nodes)} != {len(graph_processor.ts_nodes)}"
     

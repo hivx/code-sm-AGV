@@ -178,7 +178,7 @@ class Node:
         #if(deltaT <= 10):
         #    pdb.set_trace()
         #    deltaT= event.graph.getReal(event.agv.current_node, next_vertex, event.agv)
-        allIDsOfTargetNodes = [node.id for node in event.graph.graph_processor.targetNodes]
+        allIDsOfTargetNodes = [node.id for node in event.graph.graph_processor.target_nodes]
         if(next_vertex in allIDsOfTargetNodes):
             #if(event.agv.id == 'AGV30'):
             #    pdb.set_trace()
@@ -198,7 +198,7 @@ class Node:
                 event.agv.current_node,
                 next_vertex,
             )
-        if(event.graph.graph_processor.printOut):
+        if(event.graph.graph_processor.print_out):
             print(f"H = {event.graph.graph_processor.H} and {event.end_time} + {deltaT}")
             #pdb.set_trace()
         #pdb.set_trace()

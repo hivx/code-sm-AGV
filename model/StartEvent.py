@@ -9,7 +9,7 @@ class StartEvent(Event):
 
     def process(self):
         #pdb.set_trace()
-        if(self.graph.graph_processor.printOut):
+        if(self.graph.graph_processor.print_out):
             print(f"StartEvent processed at time {self.start_time} for {self.agv.id}. The AGV is currently at node {self.agv.current_node}.")
         #self.determine_next_event()
         #self.getNext(True)

@@ -79,7 +79,7 @@ class RestrictionController:
         space_destination = end_node.id % self.M if end_node.id % self.M != 0 else self.M
         time_source = start_node.id // self.M - (1 if start_node.id % self.M == 0 else 0)
         time_destination = end_node.id // self.M - (1 if end_node.id % self.M == 0 else 0)
-        if(not (time_source >= self.graph_processor.endBan or time_destination <= self.graph_processor.startBan)):
+        if(not (time_source >= self.graph_processor.end_ban or time_destination <= self.graph_processor.start_ban)):
         #space_id = (M if node.id % M == 0 else node.id % M)
             #pdb.set_trace()
             key = tuple([space_source, space_destination])

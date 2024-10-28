@@ -4,9 +4,9 @@ import config
 from collections import defaultdict
 
 class NetworkXSolution:
-    def __init__(self):#, edges_with_costs, started_nodes, target_nodes):
-        self.started_nodes = None #started_nodes
-        self.target_nodes = None #target_nodes
+    def __init__(self):#, edges_with_costs, startednodes, targetnodes):
+        self.startednodes = None #startednodes
+        self.targetnodes = None #targetnodes
         self.edges_with_costs = None #edges_with_costs
         self.flowCost = 0
         self.flowDict = defaultdict(list)

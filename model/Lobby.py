@@ -45,9 +45,9 @@ class Lobby:
 
                 self.people.append(Person(x_cord, 0, self.speeds[i], 1))
 
-    def calculate_time(self, L, D, robot, N, enter_time, printOut = True):
+    def calculate_time(self, L, D, robot, N, enter_time, print_out = True):
         self.generate_people(L, N)
-        if(printOut):
+        if(print_out):
             print(self.distribution)
             print(f"{num_people} {np.sum(num_people)} while N = {N/2}")
             print(f"Toa do x: {[person.x for person in people]}")

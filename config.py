@@ -1,12 +1,12 @@
 solver_choice = 'network-simplex'
-startedNodes = []
+started_nodes = []
 ID = []
 earliness = []
 tardiness = []
 filepath = ""
 H = 0
 d = 0
-numMaxAGVs = 0
+num_max_agvs = 0
 numOfAGVs = 0
 count = 0
 reachingTargetAGVs = 0

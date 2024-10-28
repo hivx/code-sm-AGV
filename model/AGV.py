@@ -88,7 +88,7 @@ class AGV:
         
     def update_cost(self, amount):
         self.cost += amount
-        if(self.graph.graph_processor.printOut):
+        if(self.graph.graph_processor.print_out):
             print(f"Cost updated for AGV {self.id}: {self.cost}.")
 
     def getNextNode(self, endedEvent = False):
@@ -117,7 +117,7 @@ class AGV:
                     break
             if(next_node is None):
                 next_node = self._traces[0]
-            if(self.graph.graph_processor.printOut):
+            if(self.graph.graph_processor.ut):
                 print(f"AGV {self.id} is moving to next node: {next_node} from current node: {self.current_node}.")
             return next_node
         else:
@@ -133,7 +133,7 @@ class AGV:
                     current_frame = inspect.currentframe()
                     # Lấy tên của hàm gọi my_function
                     caller_name = inspect.getframeinfo(current_frame.f_back).function
-                    #if(self.graph.graph_processor.printOut):
+                    #if(self.graph.graph_processor.print_out):
                     print(f'AGV.py:74 {caller_name}')
                     print(f'{getframeinfo(currentframe()).filename.split("/")[-1]}:{getframeinfo(currentframe()).lineno} {self.id}', end=' ')"""
         return self._traces
@@ -147,7 +147,7 @@ class AGV:
                     current_frame = inspect.currentframe()
                     # Lấy tên của hàm gọi my_function
                     caller_name = inspect.getframeinfo(current_frame.f_back).function
-                    #if(self.graph.graph_processor.printOut):
+                    #if(self.graph.graph_processor.print_out):
                     print(f'AGV.py:88 {caller_name}')"""
         self._traces = traces
     
@@ -161,7 +161,7 @@ class AGV:
             else:
                 index = index + 1
         if(index >= len(self._traces)):
-            if(self.graph.graph_processor.printOut):
+            if(self.graph.graph_processor.print_out):
                 print(f'{self.id} has _traces: {self._traces} needs to be inserted {real_node} at [{index}]')
             #pdb.set_trace()
             self._traces = [real_node]
@@ -173,11 +173,11 @@ class AGV:
             self.current_node = self.get_traces()[0].id
             self._traces.pop(0)
             self.state = 'moving'
-            if(self.graph.graph_processor.printOut):
+            if(self.graph.graph_processor.print_out):
                 print(f"AGV {self.id} moved from {self.previous_node} to {self.current_node}. State updated to 'idle'.")
             self.state = 'idle'
         else:
-            if(self.graph.graph_processor.printOut):
+            if(self.graph.graph_processor.print_out):
                 print(f"AGV {self.id} has no further destinations to move to.")
 
     def wait(self, duration):

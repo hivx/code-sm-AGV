@@ -144,9 +144,9 @@ def assert_numberOf_RestrictionNodes(graph):
 
 processor = GraphProcessor()
 print("Test cho file 2ndSimple.txt")
-processor.printOut = False
+processor.print_out = False
 filepath = "2ndSimple.txt"
-processor.startedNodes = [1, 10]
+processor.started_nodes = [1, 10]
 processor.process_input_file(filepath)
 processor.H = 10
 processor.generate_hm_matrix()
@@ -161,14 +161,14 @@ while(count <= 1):
     processor.alpha = 1
     processor.beta = 1
     processor.add_time_windows_constraints()
-    #assert len(processor.tsEdges) == len(processor.ts_edges), f"Thiếu cạnh ở đâu đó rồi {len(processor.tsEdges)} != {len(processor.ts_edges)}"
+    #assert len(processor.ts_edges) == len(processor.tsedges), f"Thiếu cạnh ở đâu đó rồi {len(processor.ts_edges)} != {len(processor.tsedges)}"
     count += 1
 #processor.update_tsg_with_T()
 #processor.add_restrictions()
 processor.gamma = 1
 processor.restriction_count = 1
-processor.startBan = 2
-processor.endBan = 5
+processor.start_ban = 2
+processor.end_ban = 5
 processor.restrictions = [[2, 3]]
 processor.Ur = 1
 processor.process_restrictions()
@@ -177,14 +177,14 @@ processor.process_restrictions()
 #predictedChange = int(input("Sự thay đổi thời gian dự kiến của các cạnh còn lại: "))
 
 graph = Graph(processor)
-"""for edge in processor.ts_edges:
+"""for edge in processor.tsedges:
     start = edge.start_node
     end = edge.end_node
     graph.insertEdgesAndNodes(start, end, edge)"""
 
 #pdb.set_trace()
 processor.init_nodes_n_edges(graph)
-assert (graph.count_edges() == len(processor.ts_edges)), "Missing some edges elsewhere"
+assert (graph.count_edges() == len(processor.tsedges)), "Missing some edges elsewhere"
 assert (len(graph.nodes) == len(processor.ts_nodes)), f"Missing some nodes elsewhere as {len(graph.nodes)} != {len(processor.ts_nodes)}"
 
 id1 = 1

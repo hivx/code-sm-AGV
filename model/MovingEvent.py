@@ -16,14 +16,14 @@ class MovingEvent(Event):
         M = self.graph.numberOfNodesInSpaceGraph
         t1 = self.start_node // M - (self.graph.graph_processor.d if self.start_node % M == 0 else 0)
         if(t1 != self.start_time):
-            if(self.graph.graph_processor.printOut):
+            if(self.graph.graph_processor.print_out):
                 print("Errror")
             #pdb.set_trace()
             # Lấy thông tin về khung hiện tại
             """current_frame = inspect.currentframe()
             # Lấy tên của hàm gọi my_function
             caller_name = inspect.getframeinfo(current_frame.f_back).function
-            if(self.graph.graph_processor.printOut):
+            if(self.graph.graph_processor.print_out):
                 print(f'MovingEvent.py:19 {caller_name}')"""
     def __str__(self):
         M = self.graph.numberOfNodesInSpaceGraph
@@ -124,14 +124,14 @@ class MovingEvent(Event):
     def process(self):
         #if(self.agv.id == 'AGV4'):
         #    pdb.set_trace()
-        if(self.graph.graph_processor.printOut):
+        if(self.graph.graph_processor.print_out):
             print(self)
         self.calculateCost()
         # Thực hiện cập nhật đồ thị khi xử lý sự kiện di chuyển
         self.updateGraph()
         if(self.force_quit):
             return
-        if(self.graph.graph_processor.printOut):
+        if(self.graph.graph_processor.print_out):
             print(
                 f"AGV {self.agv.id} moves from {self.start_node} to {self.end_node} taking actual time {self.end_time - self.start_time}"
                 )
