@@ -479,7 +479,7 @@ class GraphProcessor:
         
         edges_with_cost = { (int(edge[1]), int(edge[2])): int(edge[5]) \
                            for edge in self.space_edges if edge[3] == '0' and int(edge[4]) >= 1 }
-        max = self.getMaxID() + 1
+        max = self.get_max_id() + 1
         # Xác định các điểm bị cấm
         for restriction in self.restrictions:
             R = []
@@ -615,7 +615,7 @@ class GraphProcessor:
         #pdb.set_trace()
         from model.TimeWindowController import TimeWindowController
         # Tìm giá trị lớn nhất trong TSG.txt
-        max_val = self.getMaxID()
+        max_val = self.get_max_id()
         #print(f"max_val = {max_val}")
         max_val += 1
         target_node = TimeWindowNode(max_val, "TimeWindow")
