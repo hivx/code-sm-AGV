@@ -290,7 +290,7 @@ class Event:
             target_node = self.agv.target_node
         if(target_node is not None):    
             if target_node.id in allIDsOfTargetNodes and len(self.agv.get_traces()) > 0:
-                self.agv.target_node = self.graph.graph_processor.getTargetByID(target_node.id)
+                self.agv.target_node = self.graph.graph_processor.get_target_by_id(target_node.id)
             global allAGVs
             #pdb.set_trace()
             for a in allAGVs:
@@ -309,7 +309,7 @@ class Event:
                         target_node = a.target_node
                     if(target_node is not None):
                         if target_node.id in allIDsOfTargetNodes:
-                            a.target_node = self.graph.graph_processor.getTargetByID(target_node.id)
+                            a.target_node = self.graph.graph_processor.get_target_by_id(target_node.id)
                 """print(f'{getframeinfo(currentframe()).filename.split("/")[-1]}:{getframeinfo(currentframe()).lineno} {a.id}', end=' ')
                 for node in a.get_traces():
                     print(node.id, end= ' ')
