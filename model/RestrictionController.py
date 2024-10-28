@@ -15,7 +15,7 @@ class RestrictionController:
         self.beta = graph_processor.beta
         self.gamma = graph_processor.gamma
         self.H = graph_processor.H 
-        self.Ur = graph_processor.Ur
+        self.ur = graph_processor.ur
         self.M = graph_processor.M
         self.graph_processor = graph_processor
     

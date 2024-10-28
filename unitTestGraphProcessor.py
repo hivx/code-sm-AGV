@@ -170,7 +170,7 @@ processor.restriction_count = 1
 processor.start_ban = 2
 processor.end_ban = 5
 processor.restrictions = [[2, 3]]
-processor.Ur = 1
+processor.ur = 1
 processor.process_restrictions()
 
 #realTime = int(input("Thời gian thực tế: "))
