@@ -35,5 +35,5 @@ class RestrictionEvent(Event):
         print(
             f"AGV {self.agv.id} moves from {self.start_node} to {self.end_node} under restrictions, taking {self.end_time - self.start_time} seconds"
         )
-        self.updateGraph(self.graph)
+        self.updateGraph()
         self.calculateCost()

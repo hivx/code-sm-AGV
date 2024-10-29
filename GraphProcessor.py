@@ -160,11 +160,9 @@ class GraphProcessor:
                     if(self.print_out):
                         print(f"i = {i} {source_idx} {target_idx} = 1")
 
-                    if source_idx < size and target_idx < size:
+                    if source_idx < size and (target_idx < size or (size <= target_idx < 2*size)):
                         self.adj[source_idx, target_idx] = 1
-                    elif source_idx < size and target_idx >= size and target_idx < 2*size: 
-                        self.adj[source_idx, target_idx] = 1
-
+                        
         for i in range(size):
             j = i + self.M * self.d
             if j < size and (i % self.M == j % self.M):
@@ -479,7 +477,7 @@ class GraphProcessor:
         
         edges_with_cost = { (int(edge[1]), int(edge[2])): int(edge[5]) \
                            for edge in self.space_edges if edge[3] == '0' and int(edge[4]) >= 1 }
-        Max = self.get_max_id() + 1
+        maxid = self.get_max_id() + 1
         # Xác định các điểm bị cấm
         for restriction in self.restrictions:
             R = []
@@ -511,12 +509,12 @@ class GraphProcessor:
             #self.create_tsg_file()
             # Tạo các cung mới dựa trên các cung cấm
             if R:
-                a_s, a_t, a_sub_t = Max, Max + 1, Max + 2
+                a_s, a_t, a_sub_t = maxid, maxid + 1, maxid + 2
                 #pdb.set_trace()
                 self.check_and_add_nodes([a_s, a_t, a_sub_t], True, "Restriction")
                 self.restriction_controller.\
                     add_nodes_and_ReNode(time_space_point_0, time_space_point_1, restriction, a_s, a_t)
-                Max += 3
+                maxid += 3
                 e1 = (a_s, a_t, 0, self.H, int(self.gamma/self.alpha))
                 e2 = (a_s, a_sub_t, 0, self.ur, 0)
                 e3 = (a_sub_t, a_t, 0, self.H, 0)
@@ -534,7 +532,7 @@ class GraphProcessor:
         #halting_nodes = 
         self.insert_halting_edges()
         
-        self.write_to_file(Max)
+        self.write_to_file(maxid)
         #pdb.set_trace()
         
     def insert_halting_edges(self):
@@ -555,7 +553,7 @@ class GraphProcessor:
         self.ts_edges.extend(e for e in new_a if e not in self.ts_edges)
         self.create_set_of_edges(new_a)
     
-    def write_to_file(self, Max, filename = "TSG.txt"):
+    def write_to_file(self, maxid, filename = "TSG.txt"):
         M = max(target.id for target in self.get_targets())
         with open('TSG.txt', 'w') as file:
             file.write(f"p min {M} {len(self.ts_edges)}\n")
@@ -791,7 +789,7 @@ class GraphProcessor:
             E = set()
 
             try:
-                # Đọc dòng p min Max A
+                # Đọc dòng p min maxid A
                 with open('TSG.txt', 'r') as file:
                     lines = file.readlines()
                     if lines:

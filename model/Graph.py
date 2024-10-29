@@ -541,15 +541,7 @@ class Graph:
                     Q.append(i)      
               
     def update_node(self, node, properties):
-        #pdb.set_trace()
-        #pass
         return
-        """if node in self.nodes:
-            self.nodes[node].update(properties)
-            print(f"Node {node} updated with properties {properties}.")
-        else:
-            self.nodes[node] = properties
-            print(f"Node {node} added with properties {properties}.")"""
  
     def add_edge(self, from_node, to_node, weight):
         self.adjacency_list[from_node].append((to_node, weight))
@@ -800,7 +792,7 @@ class Graph:
         #    for start_node in self.adjacency_list:
         #        for end_node, weight in self.adjacency_list[start_node]:
         #            file.write(f"a {start_node} {end_node} 0 1 {weight}\n")
-        Max = len(self.nodes)
+        maxid = len(self.nodes)
         #pdb.set_trace()
         sorted_edges = sorted(self.adjacency_list.items(), key=lambda x: x[0])
         num_edges = self.count_edges()
@@ -808,7 +800,7 @@ class Graph:
         
         with open(filename, 'w') as file:
             file.write(f"p min {M} {num_edges}\n")
-            """if(Max == 8161 and num_edges == 13865):
+            """if(maxid == 8161 and num_edges == 13865):
                 pdb.set_trace()
             for start in self.graph_processor.started_nodes:
                 #pdb.set_trace()
