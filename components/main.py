@@ -64,7 +64,7 @@ def validate_moving_vertically(move_up_or_down_list):
             assert (len(paths) == 1) and len(paths[0]) == (num_of_edges + 1), \
                 f'đường đi từ {i} đến {i + steps} thì mong đợi {num_of_edges} trong khi thực tế len(paths[0]) = {len(paths[0])}'
 
-def validate_pairs(G, pair_of_moving_vertically):
+def validate_pairs(pair_of_moving_vertically):
     next_lines = [item.value for item in pair_of_moving_vertically[1]]
     max_length = max(len(str(item)) for item in pair_of_moving_vertically[0])
 
@@ -128,7 +128,7 @@ def read_graph_from_file(file_name):
             #print(f'Line #{count}')
             parts = line.split()
             if len(parts) >= 7:
-                a, ID1, ID2, L, U, C, ID3, _ = parts
+                _, ID1, ID2, _, _, C, ID3, _ = parts
                 G.add_edge(ID1, ID2, weight=int(C), ID3=ID3)
                 if(not check_missing_arcs):
                     G.add_edge(ID2, ID1, weight=int(C), ID3=ID3)#add để thành đồ thị vô hướng
@@ -139,7 +139,7 @@ def read_graph_from_file(file_name):
                 else:
                     map_id3_id1[id3] = [id1]
             else:
-                a, ID1, ID2, L, U, C = parts
+                _, ID1, ID2, _, _, C = parts
                 G.add_edge(ID1, ID2, weight=int(C))
                 if(not check_missing_arcs):
                     G.add_edge(ID2, ID1, weight=int(C))#add để thành đồ thị vô hướng
@@ -151,7 +151,6 @@ def find_shortest_paths(G, id_x, id_y):
         paths = list(nx.all_shortest_paths(G, source=id_x, target=id_y, weight='weight'))
     except nx.NetworkXNoPath:
         print(f"Không thể tìm thấy đường đi từ {id_x} đến {id_y}")
-    #paths = list(nx.all_shortest_paths(G, source=id_x, target=id_y, weight='weight'))
     return paths
 
 G, lobbies = read_graph_from_file('3x3Wards.txt')
@@ -242,7 +241,7 @@ for i in range(102, 976, 38):
     pair_of_moving_vertically[2].append(i)
 for i in range(114, 988, 38):
     pair_of_moving_vertically[2].append(i)
-validate_pairs(G, pair_of_moving_vertically)
+validate_pairs(pair_of_moving_vertically)
 
 
 
