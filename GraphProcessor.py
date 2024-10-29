@@ -213,13 +213,13 @@ class GraphProcessor:
                     self.map_nodes[id] = temp
         #    self.ts_nodes.append(Node(ID2))
 
-    def show(self, Q):
-        if len(Q) < 10:
-            return list(Q)
+    def show(self, q):
+        if len(q) < 10:
+            return list(q)
         else:
-            return list(Q)[:5] + ["..."]
+            return list(q)[:5] + ["..."]
 
-    def insert_from_queue(self, Q, checking_list = None):
+    def insert_from_queue(self, q, checking_list = None):
         #pdb.set_trace()
         output_lines = []
         edges_with_cost = { (int(edge[1]), int(edge[2])): [int(edge[4]), int(edge[5])] for edge in self.space_edges \
@@ -229,28 +229,28 @@ class GraphProcessor:
         #[[edge.start_node, end_node] for (end_node, edge) in checking_list.values()]
         var_value = os.environ.get('PRINT')
         count = 0
-        my_dict = {element: 1 for element in Q}
-        while Q:
+        my_dict = {element: 1 for element in q}
+        while q:
             #if var_value == 'insert_from_queue' or True:
                 # Thực hiện khối lệnh của bạn ở đây
             if(count % 1000 == 0):
-                #print(f'Vòng lặp thứ {count} và Q có {len(Q)}')
+                #print(f'Vòng lặp thứ {count} và q có {len(q)}')
                 pass
             count = count + 1
-            ID = Q.popleft()
-            #print(Q)
+            ID = q.popleft()
+            #print(q)
             if ID < 0 or ID >= self.adj.shape[0]:
                 continue
             
             for j in self.adj.rows[ID]:  # Direct access to non-zero columns for row ID in lil_matrix
                 if(not any(edge[0] == ID and edge[1] == j for edge in ts_edges)):
-                    #Q.append(j)
-                    if j in Q:
-                        #print(f'\t{j} đã tồn tại trong {self.show(Q)}')
+                    #q.append(j)
+                    if j in q:
+                        #print(f'\t{j} đã tồn tại trong {self.show(q)}')
                         if any(line.startswith(f"a {ID} {j} 0") for line in output_lines):
                             continue
                     else:
-                        Q.append(j)
+                        q.append(j)
                     u, v = ID % self.M, j % self.M
                     u = u if u != 0 or ID == 0 else self.M
                     #if(v == 0):
@@ -295,11 +295,11 @@ class GraphProcessor:
 
     def create_tsg_file(self):          
         #pdb.set_trace()
-        Q = deque()
-        Q.extend(self.started_nodes)
+        q = deque()
+        q.extend(self.started_nodes)
 
         #pdb.set_trace()
-        output_lines = self.insert_from_queue(Q)
+        output_lines = self.insert_from_queue(q)
         with open('TSG.txt', 'w') as file:
             for line in output_lines:
                 file.write(line + "\n")
@@ -414,19 +414,19 @@ class GraphProcessor:
             return
 
         if (ID1, ID2) not in existing_edges:
-            Q = deque([ID2])
+            q = deque([ID2])
             visited = {ID2}
             new_edges = [(ID1, ID2, C12)]
             pdb.set_trace()
 
-            while Q:
-                ID = Q.popleft()
+            while q:
+                ID = q.popleft()
                 for j in self.adj.rows[ID]:
                     if j not in visited:
                         c = self.d if ID + self.M * self.d == j and ID % self.M == j % self.M else C12
                         if (ID // self.M) + c == j // self.M:
                             new_edges.append((ID, j, c))
-                            Q.append(j)
+                            q.append(j)
                             visited.add(j)
                             
             edges_with_cost = { (int(edge[1]), int(edge[2])): [int(edge[4]), int(edge[5])] for edge in self.space_edges \

@@ -1,4 +1,4 @@
-def removeZeroLines(file_path):
+def remove_zero_lines(file_path):
 	with open(file_path, 'r') as file:
 		lines = file.readlines()
 
@@ -41,5 +41,5 @@ def filter_lines(seq_file_path, input_file_path, H):
 	print(f"Count sau khi lọc là: {count}")
 
 # Thay 'seq-f.txt' và 'input1.txt' bằng đường dẫn tới file của bạn
-removeZeroLines('seq-f.txt')
+remove_zero_lines('seq-f.txt')
 filter_lines('filtered.txt', 'TSG.txt', 23)

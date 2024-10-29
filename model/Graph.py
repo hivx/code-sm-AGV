@@ -520,25 +520,25 @@ class Graph:
     def update(self,currentpos,nextpos,realtime):
         list = utility()
         del self.matrix[currentpos,nextpos]
-        Q = deque()
-        Q.append(nextpos)
-        while Q:
-            pos = Q[0]
-            Q.pop()
+        q = deque()
+        q.append(nextpos)
+        while q:
+            pos = q[0]
+            q.pop()
             for i in list.findid(pos):
                 if (pos,i) in self.matrix:
                     del self.matrix[pos,i]
-                    Q.append(i)
+                    q.append(i)
         nextpos = list.M*(int(currentpos/list.M)+ realtime) + list.getid(nextpos)
         self.matrix[currentpos,nextpos] = realtime
-        Q.append(nextpos)
-        while Q:
-            pos = Q[0]
-            Q.pop()
+        q.append(nextpos)
+        while q:
+            pos = q[0]
+            q.pop()
             for i in list.findid(pos):
                 if (pos,i) not in self.matrix:
                     self.matrix[pos,i] = int((pos-i)/list.M)
-                    Q.append(i)      
+                    q.append(i)      
               
     def update_node(self, node, properties):
         return
@@ -649,13 +649,13 @@ class Graph:
                         #pdb.set_trace()
                     del self.nodes[source_id]
         
-        Q = deque()
-        Q.append(new_node_id)
+        q = deque()
+        q.append(new_node_id)
         new_started_nodes = self.getAllNewStartedNodes()
         for start in new_started_nodes:
             if(start != new_node_id):
-                Q.append(start)
-        new_edges = self.graph_processor.insert_from_queue(Q, self.adjacency_list)
+                q.append(start)
+        new_edges = self.graph_processor.insert_from_queue(q, self.adjacency_list)
         for edge in new_edges:
             arr = self.parse_string(edge)
             source_id = arr[0]

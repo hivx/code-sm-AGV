@@ -3,11 +3,11 @@ Bản 2408071018: đã lưu danh sách các đỉnh mốc của khu vực hành 
 tôi có 1 file txt với nội dung các dòng như sau: a ID1 ID2 L U C ID3. 
 Dòng đó mang nghĩa là ID1 và ID2 nối với nhau với trọng số là C. 
 Trong đó ID3 có thể không xuất hiện tại một số dòng. Hãy cho tôi mã nguồn Python 
-đọc các dòng của file đó, rồi tìm ra 2 đường đi ngắn nhất giữa điểm IDx và IDy 
+đọc các dòng của file đó, rồi tìm ra 2 đường đi ngắn nhất giữa điểm id_x và id_y 
 biết rằng:
-(i) IDx và IDy đều có chung giá trị ID3; 
-(ii) IDx và IDy đều xuất hiện ở sau chữ a. 
-Khi tìm được 2 đường đi giữa 2 đỉnh IDx và IDy thì in các đỉnh trong 
+(i) id_x và id_y đều có chung giá trị ID3; 
+(ii) id_x và id_y đều xuất hiện ở sau chữ a. 
+Khi tìm được 2 đường đi giữa 2 đỉnh id_x và id_y thì in các đỉnh trong 
 2 đường đi đó ra 1 dòng.
 """
 import networkx as nx
@@ -128,13 +128,13 @@ def read_graph_from_file(file_name):
     map_id3_id1 = {}
     G = nx.DiGraph()
     count = 0
-    checkMissingArcs = bool(input("Bạn có muốn kiểm tra các arc bị thiếu sót không? (True/False. Enter để nhập True)"))
-    checkMissingArcs = bool(checkMissingArcs) if checkMissingArcs else True
-    enableDebugging = bool(input("Bạn có muốn debug không? (Enter để disable Debugging)"))
-    enableDebugging = bool(enableDebugging) if enableDebugging else False
+    check_missing_arcs = bool(input("Bạn có muốn kiểm tra các arc bị thiếu sót không? (True/False. Enter để nhập True)"))
+    check_missing_arcs = bool(check_missing_arcs) if check_missing_arcs else True
+    enable_debugging = bool(input("Bạn có muốn debug không? (Enter để disable Debugging)"))
+    enable_debugging = bool(enable_debugging) if enable_debugging else False
     with open(file_name, 'r') as file:
         for line in file:
-            if(enableDebugging):
+            if(enable_debugging):
                 pdb.set_trace()
             count = count + 1
             #print(f'Line #{count}')
@@ -142,7 +142,7 @@ def read_graph_from_file(file_name):
             if len(parts) >= 7:
                 a, ID1, ID2, L, U, C, ID3, _ = parts
                 G.add_edge(ID1, ID2, weight=int(C), ID3=ID3)
-                if(not checkMissingArcs):
+                if(not check_missing_arcs):
                     G.add_edge(ID2, ID1, weight=int(C), ID3=ID3)#add để thành đồ thị vô hướng
                 id1 = parts[1]
                 id3 = parts[6]
@@ -153,31 +153,31 @@ def read_graph_from_file(file_name):
             else:
                 a, ID1, ID2, L, U, C = parts
                 G.add_edge(ID1, ID2, weight=int(C))
-                if(not checkMissingArcs):
+                if(not check_missing_arcs):
                     G.add_edge(ID2, ID1, weight=int(C))#add để thành đồ thị vô hướng
     return G, map_id3_id1
 
-def find_shortest_paths(G, IDx, IDy):
+def find_shortest_paths(G, id_x, id_y):
     paths = []
     try:
-        paths = list(nx.all_shortest_paths(G, source=IDx, target=IDy, weight='weight'))
+        paths = list(nx.all_shortest_paths(G, source=id_x, target=id_y, weight='weight'))
     except nx.NetworkXNoPath:
-        print(f"Không thể tìm thấy đường đi từ {IDx} đến {IDy}")
-    #paths = list(nx.all_shortest_paths(G, source=IDx, target=IDy, weight='weight'))
+        print(f"Không thể tìm thấy đường đi từ {id_x} đến {id_y}")
+    #paths = list(nx.all_shortest_paths(G, source=id_x, target=id_y, weight='weight'))
     return paths
 
 G, lobbies = read_graph_from_file('3x3Wards.txt')
 
 for key, value in lobbies.items():
     #print(key, value)
-    # Replace 'IDx' and 'IDy' with the actual values
-    IDx = value[0]
-    IDy = value[1]
-    paths = find_shortest_paths(G, IDx, IDy)
+    # Replace 'id_x' and 'id_y' with the actual values
+    id_x = value[0]
+    id_y = value[1]
+    paths = find_shortest_paths(G, id_x, id_y)
     # Print the two shortest paths
     print(f'Vùng {key}: ')
     print('\tShortest path 1:', ' -> '.join(paths[0]))
-    paths = find_shortest_paths(G, IDy, IDx)
+    paths = find_shortest_paths(G, id_y, id_x)
     print('\tShortest path 2:', ' -> '.join(paths[0]))
     print("=============================================")
     
