@@ -25,12 +25,3 @@ def read_dimac_file(file_path):
 # Đường dẫn đến file DIMAC của bạn
 file_path = input("Path to DIMAC file:")
 read_dimac_file(file_path)
-"""G = nx.DiGraph()
-G.add_node("a", demand=-1)
-G.add_node("c", demand=1)
-G.add_edge("a", "b", weight=3, capacity=1)
-G.add_edge("b", "c", weight=0, capacity=1)
-G.add_edge("a", "c", weight=5, capacity=1)
-flowCost, flowDict = nx.network_simplex(G)
-print("flowCost:", flowCost)
-print("flowDict:", flowDict)"""

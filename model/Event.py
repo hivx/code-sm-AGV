@@ -12,7 +12,7 @@ from inspect import currentframe, getframeinfo
 from .NXSolution import NetworkXSolution
 
 
-numberOfNodesInSpaceGraph = 0
+number_of_nodes_in_space_graph = 0
 debug = 0
 allAGVs = {}
 numOfCalling = 0
@@ -31,9 +31,9 @@ class Event:
         if name == "debug":
             global debug
             debug = value
-        if name == "numberOfNodesInSpaceGraph":
-            global numberOfNodesInSpaceGraph
-            numberOfNodesInSpaceGraph = value
+        if name == "number_of_nodes_in_space_graph":
+            global number_of_nodes_in_space_graph
+            number_of_nodes_in_space_graph = value
         if name == "allAGVs":
             global allAGVs
             allAGVs = value
@@ -42,9 +42,9 @@ class Event:
         if name == "debug":
             global debug
             return debug
-        if name == "numberOfNodesInSpaceGraph":
-            global numberOfNodesInSpaceGraph
-            return numberOfNodesInSpaceGraph
+        if name == "number_of_nodes_in_space_graph":
+            global number_of_nodes_in_space_graph
+            return number_of_nodes_in_space_graph
         if name == "allAGVs":
             global allAGVs
             return allAGVs
@@ -68,19 +68,7 @@ class Event:
         self.pos = self.pos + wait_time * obj.M
         self.time = self.time + wait_time
         graph.writefile(self.pos, 1)
-
-    """def getReal(self, currentpos, nextpos, realtime):
-        obj = utility()
-        graph = Graph(self.x)
-        nextpos = obj.M * (
-            int(self.pos / obj.M) + obj.matrix[currentpos, nextpos]
-        ) + obj.getid(nextpos)
-        graph.update(self.pos, nextpos, realtime)
-        self.x = graph.matrix
-        self.time = self.time + realtime
-        self.pos = obj.M * (int(self.pos / obj.M) + realtime) + obj.getid(nextpos)
-        graph.writefile(self.pos, 1)"""
-
+        
     def getForecast(self, nextpos, forecastime):
         obj = utility()
         self.pos = obj.M * (int(self.pos / obj.M) + forecastime) + obj.getid(nextpos)
@@ -98,9 +86,9 @@ class Event:
     def solve(self):
         from model.forecasting_model_module.ForecastingModel import ForecastingModel, DimacsFileReader
         #pdb.set_trace()
-        if self.graph.numberOfNodesInSpaceGraph == -1:
-            global numberOfNodesInSpaceGraph
-            self.graph.numberOfNodesInSpaceGraph = numberOfNodesInSpaceGraph
+        if self.graph.number_of_nodes_in_space_graph == -1:
+            global number_of_nodes_in_space_graph
+            self.graph.number_of_nodes_in_space_graph = number_of_nodes_in_space_graph
         if (self.graph.version != self.agv.version_of_graph or self.graph.version == -1):
             self.find_path(DimacsFileReader, ForecastingModel)
 
@@ -131,28 +119,11 @@ class Event:
         from .MovingEvent import MovingEvent
         from .HaltingEvent import HaltingEvent
         self.solve()
-        #if(would_break_point):
-        #    pdb.set_trace()
-        """if(numOfCalling == 4):
-            #pdb.set_trace()
-            print(f'getNext {getframeinfo(currentframe()).filename.split("/")[-1]}:{getframeinfo(currentframe()).lineno}')
-            #global allAGVs
-            for a in allAGVs:
-                if(a.id == 'AGV10'):
-                    print(f'\t{a.id}', end=' ')
-                    if(len(a.get_traces()) == 0):
-                        print("Trace is empty")
-                    else:
-                        for node in a.get_traces():
-                            print(f'{node.id}', end= ' ')
-                        print()"""
-        #if(self.agv.id == 'AGV4' and debug):
-        #    pdb.set_trace()
+
         if(len(self.agv.get_traces()) == 0):
             pdb.set_trace()
         next_vertex = self.agv.get_next_node()
-        """if(next_vertex.id == 51265 or next_vertex.id == 51266):
-            pdb.set_trace()"""
+
         if(next_vertex is None):
             print(f'{self.agv.id} at Event.py:155')
         new_event = next_vertex.getEventForReaching(self)
@@ -162,7 +133,6 @@ class Event:
         # simulator.schedule(new_event.end_time, new_event.getNext, self.graph)
         simulator.schedule(new_event.end_time, new_event.process)
 
-    # TODO Rename this here and in `getNext`
     def find_path(self, DimacsFileReader, ForecastingModel):
         #pdb.set_trace()
         if self.graph.version == -1 == self.agv.version_of_graph:
@@ -178,7 +148,7 @@ class Event:
         if config.solver_choice == 'solver':
             #print("----------------------------")
             self.createTracesFromSolver(DimacsFileReader, filename, ForecastingModel)
-                    #self.graph.version += 1
+
         elif config.solver_choice == 'network-simplex':
             if len(self.pns_path) == 0:
                 self.pns_path = input("Enter the path for pns-seq: ")
@@ -200,8 +170,6 @@ class Event:
             command = "python3 filter.py > traces.txt"
             subprocess.run(command, shell=True)
 
-        #pdb.set_trace()
-        #print(f"{self} {self.start_time} {self.end_time}")
         if self.graph.version == -1 == self.agv.version_of_graph:
             self.graph.version += 1
         """print(f'{getframeinfo(currentframe()).filename.split("/")[-1]}:{getframeinfo(currentframe()).lineno} {self.agv.id}', end=' ')
@@ -210,10 +178,8 @@ class Event:
         print()"""
         self.setTracesForAllAGVs()
 
-    # TODO Rename this here and in `getNext`
     def createTracesFromSolver(self, DimacsFileReader, filename, ForecastingModel):
-        #print(f"Running ForecastingModel {filename}...")
-        # Assuming `filename` is a path to the file with necessary data for the model
+
         dimacs_file_reader = DimacsFileReader(filename)
         dimacs_file_reader.read_custom_dimacs()
         problem_info, supply_nodes_dict, demand_nodes_dict, zero_nodes_dict, arc_descriptors_dict, earliness_tardiness_dict = dimacs_file_reader.get_all_dicts()
@@ -261,16 +227,15 @@ class Event:
             print(node.id, end= ' ')
         print()"""
         self.graph.setTrace("traces.txt")
-        #if (self.start_time == 0 and self.end_time == 17):
-        #    pdb.set_trace()
+
         if(self.agv.get_traces() != None):
             #print("Truoc khi gan thi ko None")
             pass
         temp = self.graph.getTrace(self.agv) 
-        allIDsOfTargetNodes = [node.id for node in self.graph.graph_processor.target_nodes]
+        all_ids_of_target_nodes = [node.id for node in self.graph.graph_processor.target_nodes]
         #self.agv.set_traces(temp if temp != None else self.agv.get_traces())
         if temp != None:
-            while(temp[-1].id not in allIDsOfTargetNodes):
+            while(temp[-1].id not in all_ids_of_target_nodes):
                 temp.pop()
                 if(len(temp) == 0):
                     break
@@ -281,25 +246,19 @@ class Event:
             pass
         #else:
         elif len(self.agv.get_traces()) > 0:
-            #pdb.set_trace()
-            """if(len(self.agv.get_traces()) == 0):
-                print(f'len(self.agv.get_traces()) = 0')
-                pdb.set_trace()"""
             target_node = self.agv.get_traces()[len(self.agv.get_traces()) - 1]
         else:
             target_node = self.agv.target_node
         if(target_node is not None):    
-            if target_node.id in allIDsOfTargetNodes and len(self.agv.get_traces()) > 0:
+            if target_node.id in all_ids_of_target_nodes and len(self.agv.get_traces()) > 0:
                 self.agv.target_node = self.graph.graph_processor.get_target_by_id(target_node.id)
             global allAGVs
             #pdb.set_trace()
             for a in allAGVs:
-                #if a.id == 'AGV4':
-                #    pdb.set_trace()
                 if a.id != self.agv.id and a.version_of_graph < self.graph.version:
                     temp = self.graph.getTrace(a)
                     if temp != None:
-                        if(temp[len(temp) - 1].id in allIDsOfTargetNodes):
+                        if(temp[len(temp) - 1].id in all_ids_of_target_nodes):
                             a.set_traces(temp)
                     
                     a.version_of_graph = self.graph.version
@@ -308,7 +267,7 @@ class Event:
                     else:
                         target_node = a.target_node
                     if(target_node is not None):
-                        if target_node.id in allIDsOfTargetNodes:
+                        if target_node.id in all_ids_of_target_nodes:
                             a.target_node = self.graph.graph_processor.get_target_by_id(target_node.id)
                 """print(f'{getframeinfo(currentframe()).filename.split("/")[-1]}:{getframeinfo(currentframe()).lineno} {a.id}', end=' ')
                 for node in a.get_traces():

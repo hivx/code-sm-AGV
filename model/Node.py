@@ -1,8 +1,3 @@
-#from .TimeWindowEdge import TimeWindowEdge
-#from .Edge import HoldingEdge, MovingEdge
-#from .RestrictionEdge import RestrictionEdge
-#from .RestrictionNode import RestrictionNode
-#from .TimeWindowNode import TimeWindowNode
 import pdb
 from inspect import currentframe, getframeinfo
 import inspect
@@ -12,13 +7,6 @@ class Node:
         if not isinstance(id, int):
             raise ValueError(f"Tham số {id} truyền vào phải là số nguyên")
         self._id = id
-        """if(id == 19685):
-            print(f'{getframeinfo(currentframe()).filename.split("/")[-1]}:{getframeinfo(currentframe()).lineno} {self.id}', end=' ')
-            print("==========Nghi ngo van de o day!========", end='')
-            current_frame = inspect.currentframe()
-            caller_name = inspect.getframeinfo(current_frame.f_back).function
-            print(caller_name)"""
-            #pdb.set_trace()
         self.label=label
         self.edges = []
         self.agv = None
@@ -29,9 +17,6 @@ class Node:
     
     @id.setter
     def id(self, value):
-        """if(value == 13899):
-            print(f'{getframeinfo(currentframe()).filename.split("/")[-1]}:{getframeinfo(currentframe()).lineno} {self.id}', end=' ')
-            print("==========Nghi ngo van de o day!========")"""
         self._id = value
     def create_edge(self, node, M, d, e, debug = False):
         if(debug):
@@ -64,25 +49,22 @@ class Node:
         graph.add_edge(self.id, other_node.id, weight)
         
     def getEventForReaching(self, event):
-        #next_vertex = event.agv.get_next_node().id
-        #event.agv.path.add(self.id)
-        #print(f"========={event.agv.path}")
         from .HoldingEvent import HoldingEvent
         from .ReachingTargetEvent import ReachingTargetEvent
         
         current_node = event.agv.current_node.id if isinstance(event.agv.current_node, Node) else event.agv.current_node
 
         # Xác định kiểu sự kiện tiếp theo
-        deltaT = (self.id // event.graph.numberOfNodesInSpaceGraph \
-                                #- (event.graph.graph_processor.d if self.id % event.graph.numberOfNodesInSpaceGraph == 0 else 0)) - (
-                                - (1 if self.id % event.graph.numberOfNodesInSpaceGraph == 0 else 0)) - (
-            current_node // event.graph.numberOfNodesInSpaceGraph \
-                                #- (event.graph.graph_processor.d if current_node % event.graph.numberOfNodesInSpaceGraph == 0 else 0)
-                                - (1 if current_node % event.graph.numberOfNodesInSpaceGraph == 0 else 0)
+        deltaT = (self.id // event.graph.number_of_nodes_in_space_graph \
+                                #- (event.graph.graph_processor.d if self.id % event.graph.number_of_nodes_in_space_graph == 0 else 0)) - (
+                                - (1 if self.id % event.graph.number_of_nodes_in_space_graph == 0 else 0)) - (
+            current_node // event.graph.number_of_nodes_in_space_graph \
+                                #- (event.graph.graph_processor.d if current_node % event.graph.number_of_nodes_in_space_graph == 0 else 0)
+                                - (1 if current_node % event.graph.number_of_nodes_in_space_graph == 0 else 0)
         )
 
-        if (self.id % event.graph.numberOfNodesInSpaceGraph) == (
-            current_node % event.graph.numberOfNodesInSpaceGraph
+        if (self.id % event.graph.number_of_nodes_in_space_graph) == (
+            current_node % event.graph.number_of_nodes_in_space_graph
         ):
             from .StartEvent import StartEvent
             if(not isinstance(event, StartEvent)):
@@ -96,7 +78,6 @@ class Node:
             )
         elif self.id == event.agv.target_node.id:
             print(f"Target {event.agv.target_node.id}")
-            #deltaT = getReal()
             return ReachingTargetEvent(
                 event.end_time, event.end_time, event.agv, event.graph, self.id
             )
@@ -106,35 +87,19 @@ class Node:
                 pdb.set_trace()"""
             return self.goToNextNode(event)
 
-    # TODO Rename this here and in `getEventForReaching`
     def goToNextNode(self, event):
         from .Event import Event
         from .StartEvent import StartEvent
         from .MovingEvent import MovingEvent
         from .HaltingEvent import HaltingEvent
         from .ReachingTargetEvent import ReachingTargetEvent
-        #if(len(event.agv.get_traces()) == 0):
-        #    pdb.set_trace()
         if(not isinstance(event, StartEvent)):
-            #if(event.agv.id == 'AGV31'):
-            #    pdb.set_trace()
             event.agv.move_to(event)
-        ##if(len(event.agv.get_traces()) == 0):
-        #    pdb.set_trace()
-        """print(f'Node.py:94 {event.agv.id}', end=' ')
-        for node in event.agv.get_traces():
-            print(node.id, end= ' ')
-        print()"""
         M = event.graph.graph_processor.M
-        #if(event.agv.id == 'AGV30' and self.id % M == 14):
-        #    pdb.set_trace()
         if(len(event.agv.get_traces()) > 0):
             #pdb.set_trace()
             next_vertex = event.agv.get_traces()[0].id
         else:
-            #if(event.agv.target_node is None):
-            #    pdb.set_trace()
-            #next_vertex = event.agv.target_node.id
             next_vertex = -1
             reaching_time = self.id // M - (1 if self.id % M == 0 else 0)
             for source_id in event.graph.graph_processor.time_window_controller.TWEdges:
@@ -175,21 +140,14 @@ class Node:
         #        pass
         #        #pdb.set_trace()
         deltaT = event.graph.getReal(event.agv.current_node, next_vertex, event.agv)
-        #if(deltaT <= 10):
-        #    pdb.set_trace()
-        #    deltaT= event.graph.getReal(event.agv.current_node, next_vertex, event.agv)
-        allIDsOfTargetNodes = [node.id for node in event.graph.graph_processor.target_nodes]
-        if(next_vertex in allIDsOfTargetNodes):
-            #if(event.agv.id == 'AGV30'):
-            #    pdb.set_trace()
+        all_ids_of_target_nodes = [node.id for node in event.graph.graph_processor.target_nodes]
+        if(next_vertex in all_ids_of_target_nodes):
             return ReachingTargetEvent(\
                 event.end_time, event.end_time, event.agv, event.graph, next_vertex)
         if(deltaT == 0):
             #pdb.set_trace()
             pass
         if event.end_time + deltaT < event.graph.graph_processor.H:
-                #pdb.set_trace()
-            #pdb.set_trace()
             return MovingEvent(
                 event.end_time,
                 event.end_time + deltaT,
@@ -200,8 +158,6 @@ class Node:
             )
         if(event.graph.graph_processor.print_out):
             print(f"H = {event.graph.graph_processor.H} and {event.end_time} + {deltaT}")
-            #pdb.set_trace()
-        #pdb.set_trace()
         return HaltingEvent(
             event.end_time,
             event.graph.graph_processor.H,

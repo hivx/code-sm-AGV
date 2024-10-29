@@ -24,12 +24,10 @@ class TimeWindowNode(Node):
         return None
     
     def getEventForReaching(self, event):
-        #next_vertex = event.agv.get_next_node().id
         from .ReachingTargetEvent import ReachingTargetEvent
         if self.id == event.agv.target_node.id:
             #pdb.set_trace()
             print(f"Target {event.agv.target_node.id}")
-            #deltaT = getReal()
             return ReachingTargetEvent(
                 event.end_time, event.end_time, event.agv, event.graph, self.id
             )

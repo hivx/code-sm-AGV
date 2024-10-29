@@ -28,32 +28,21 @@ class Graph:
         self.adjacency_list = defaultdict(list)
         self.nodes = {node.id: node for node in graph_processor.ts_nodes}
         self.adjacency_list = {node.id: [] for node in graph_processor.ts_nodes}
-        #self.nodes = self.graph_processor.ts_nodes
-        #self.lastChangedByAGV = -1
-        #self.edges = self.graph_processor.tsedges
-        #self.nodes = {}
-        #self.adjacency_list = {}
         self.list1 = []
         self.neighbour_list = {}
         self.visited = set()
-        #self.id2_id4_list = []
         self.version = -1
         self.file_path = None
         self.cur = []
         self.map = {}
-        self.numberOfNodesInSpaceGraph = -1 if graph_processor is None else graph_processor.M
+        self.number_of_nodes_in_space_graph = -1 if graph_processor is None else graph_processor.M
         self.calling = 0
-        self.continueDebugging = True
-        #print("Initialized a new graph.")
-        #stack = inspect.stack()
-        #for frame in stack[1:]:
-        #    print(f"Hàm '{frame.function}' được gọi từ file '{frame.filename}' tại dòng {frame.lineno}")
-
-        self.History = []
+        self.continue_debugging = True
+        self.history = []
     def getReal(self, start_id, next_id, agv):
         result = -1
         from .TimeWindowNode import TimeWindowNode
-        M = self.numberOfNodesInSpaceGraph
+        M = self.number_of_nodes_in_space_graph
         if(agv is not None):
             #print(f'{agv.id}')
             #pdb.set_trace()
@@ -72,8 +61,8 @@ class Graph:
             if edge[3] == '0' and int(edge[4]) >= 1 }
         min_moving_time = edges_with_cost.get((space_start_node, space_end_node), [-1, -1])[1]
         end_time = max(end_time, start_time + min_moving_time)
-        allIDsOfTargetNodes = [node.id for node in self.graph_processor.target_nodes]
-        if(next_id in allIDsOfTargetNodes):
+        all_ids_of_target_nodes = [node.id for node in self.graph_processor.target_nodes]
+        if(next_id in all_ids_of_target_nodes):
             #pdb.set_trace()
             if(agv is not None):
                 agv.path.add(next_id)
@@ -105,7 +94,7 @@ class Graph:
         #pdb.set_trace()
         while(collision):
             collision = False
-            if (next_id not in allIDsOfTargetNodes):
+            if (next_id not in all_ids_of_target_nodes):
                 if(next_id in self.nodes.keys()):
                     if(self.nodes[next_id].agv is not None):
                         if(self.nodes[next_id].agv != agv):
@@ -185,12 +174,6 @@ class Graph:
         return hallways_list, functions_list
 
     def getAGVRuntime(self, Map_file, function_file, start_id, next_id, agv, current_time):
-        # if os.path.exists("output_history.json"):
-        #     with open("output_history.json", "r") as file:
-        #         data = json.load(file)
-        #         self.History = data["History"]
-
-        # event_history = {}
         hallways_list, functions_list = self.getReal_preprocess(Map_file, function_file)
         events_list = []  # actually only has one event but because of the structure of the code, it has to be a list
         """
@@ -217,36 +200,6 @@ class Graph:
             else:
                 hallway_id = None
 
-        # if hallway_id is not None:
-        #     event_history["hallway_id"] = hallway_id
-        #     event_history["AgvID"] = int(agv_id)
-        #     event_history["AgvDirection"] = direction
-        #     event_history["time_stamp"] = int(current_time)
-        #     event_history["src"] = int(start_id)
-        #     event_history["dest"] = int(next_id)
-        # else:
-        #     event_history = None
-
-        # # query the self.History, if the event_history is already in the self.History, return the completion_time
-        # if event_history is not None:
-        #     print(event_history)
-        #     for event in self.History:
-        #         if event["src"] == start_id and event["dest"] == next_id and event["time_stamp"] == current_time:
-        #             #[(23, 90)]
-
-        #             print(f"{bcolors.WARNING}Found in History!{bcolors.ENDC}")
-        #             print(f"[({int(agv.id[3:])}, {event["completion_time"]})]")
-
-        #             # {23: {'Region_7': {'time_stamp': 187, 'completion_time': 90}}}
-        #             # print the exact format above
-        #             ouput_line = "{" + f"{int(agv.id[3:])}: " + "{" + f"'{hallway_id}': " + "{" + f"'time_stamp': {int(current_time)}, 'completion_time': {int(event['completion_time'])}" + "}" + "}" + "}"
-        #             print(ouput_line)
-        #             print(
-        #                 f"{bcolors.OKGREEN}AGV {agv_id} from {start_id} to {next_id} at time {current_time} has runtime {event["completion_time"]}.{bcolors.ENDC}")
-        #             return int(event["completion_time"])
-
-        
-        # get the time_stamp from the current_time
         time_stamp = current_time
 
         # if hallway_id is not found, return -1
@@ -267,25 +220,14 @@ class Graph:
         # filter the hallways_list to only have the hallway that the agv is currently in
         hallways_list = [hallway for hallway in hallways_list if event["hallway_id"] == hallway_id and (hallway["src"] - hallway["dest"]) * direction > 0]
 
-        # print(hallways_list)
-        # print(functions_list)
-        # print(events_list)
-
         bulk_sim = BulkHallwaySimulator("test", 3600, hallways_list, functions_list, events_list)
         result = bulk_sim.run_simulation()
         # result will look like this: {0: {'hallway_1': {'time_stamp': 0, 'completion_time': 111}}, 1: {'hallway_1': {'time_stamp': 0, 'completion_time': 111}}}
         # get the completion_time from the result
         completion_time = result[agv_id][hallway_id]["completion_time"]
         # event_history["completion_time"] = int(completion_time)
-        # self.History.append(event_history)
-        # write the History to a file
-
-        # output_history = {}
-        # output_history["History"] = self.History
-        # with open("output_history.json", "w") as file:
-        #     output_json = json.dumps(output_history, indent=4)
-        #     file.write(output_json)
-
+        # self.history.append(event_history)
+        # write the history to a file
 
         print(f"{bcolors.OKGREEN}AGV {agv_id} from {start_id} to {next_id} at time {current_time} has runtime {completion_time}.{bcolors.ENDC}")
         return completion_time # int
@@ -297,21 +239,11 @@ class Graph:
             count = count + len(self.adjacency_list[node])
         return count
             
-    """def insertEdgesAndNodes(self, start_id, end_id, edge):
-        self.adjacency_list[start_id].append((end_id, edge))
-        #self.ensure_node_capacity(start_id)
-        #self.ensure_node_capacity(end_id)
-        if self.nodes[start_id] is None:
-            self.nodes[start_id] = {'id': start_id}
-        if self.nodes[end_id] is None:
-            self.nodes[end_id] = {'id': end_id}"""
     def insertEdgesAndNodes(self, start, end, edge):
         from .Node import Node
         start_id = start if isinstance(start, int) else start.id
         end_id = end if isinstance(end, int) else end.id
         self.adjacency_list[start_id].append((end_id, edge))
-        #self.ensure_node_capacity(start_id)
-        #self.ensure_node_capacity(end_id)
         start_node = start if isinstance(start, Node) else self.graph_processor.find_node(start)
         end_node = end if isinstance(end, Node) else self.graph_processor.find_node(end)
         if self.nodes[start_id] is None:
@@ -351,7 +283,7 @@ class Graph:
         else:
             #if start == -1:
             found = False
-            M = self.numberOfNodesInSpaceGraph
+            M = self.number_of_nodes_in_space_graph
             for x in self.nodes:
                 if(x % M == id % M and (self.nodes[x].agv is not None or isTargetNode)):
                     if(idIsAvailable):
@@ -370,16 +302,12 @@ class Graph:
         """ Build a tree from edges listed in a file for path finding. """
         #pdb.set_trace()
         id1_id3_tree = defaultdict(list)
-        M = self.numberOfNodesInSpaceGraph
-        #start = -1
+        M = self.number_of_nodes_in_space_graph
         with open(file_path, 'r', encoding='utf-8') as file:
             for line in file:
                 if line.startswith('a'):
                     numbers = line.split()
                     id1 = int(numbers[1])
-                    #if(id1 == 32):
-                    #    pdb.set_trace()
-                    #    #pass
                     id3 = int(numbers[2])
                     id2 = id1 % M
                     id4 = id3 % M
@@ -388,14 +316,11 @@ class Graph:
                         #pdb.set_trace()
                         isTargetNode = True
                         node3 = self.find_unpredicted_node(id3, node1.id != id1, isTargetNode)
-                        #node2 = self.nodes[id2]
                         if(node3 is None):
                             print(f"{node1.id}/{id1} {id3}")
                         id3 = node3.id
                         self.neighbour_list[id1] = id2
                         self.neighbour_list[id3] = id4
-                        #print(self.graph_processor.started_nodes)
-                        #pdb.set_trace()
                         if(node1.id in self.graph_processor.started_nodes or\
                             node1.agv is not None):
                             #pdb.set_trace()
@@ -420,21 +345,13 @@ class Graph:
         self.list1 = []
         self.neighbour_list = {}
         self.visited = set()
-        #self.id2_id4_list = []
         self.map = {}
         edges_with_cost = { (int(edge[1]), int(edge[2])): [int(edge[4]), int(edge[5])] for edge in self.graph_processor.space_edges \
             if edge[3] == '0' and int(edge[4]) >= 1 }
         M = self.graph_processor.M
-        #pdb.set_trace()
-        #unique_numbers = self.find_unique_numbers()
-        #unique_numbers = self.find_unique_nodes()
-        #print(unique_numbers)
-        #id1_id3_tree = self.create_trees()
         id1_id3_tree = self.build_path_tree()#self.list1 sẽ được thay đổi ở đâyđây
         for number in self.list1:
             if number not in self.visited:
-                #print(number, end=' ')
-                #self.id2_id4_list.append(self.neighbour_list[number])
                 self.cur = []
                 self.dfs(id1_id3_tree, number)
                 self.visited = set()
@@ -462,23 +379,12 @@ class Graph:
                                             break
                             if(not found):                                    
                                 self.cur = self.cur[1:]
-                #if(len(self.cur) == 0):
-                #    pdb.set_trace()
                 self.map[number] = self.cur #[1: ] if len(self.cur) > 1 else self.cur
-                #print('#', end=' ')
-                #print(' '.join(map(str, id2_id4_list)))
-                #self.id2_id4_list = []
-        """for item in self.map.keys():
-            print(f'\033[4m Graph.py: 234: {item} has trace: \033[0m {self.map[item]}\n')"""
     
     def getTrace(self, agv):
         #pdb.set_trace()
         idOfAGV = int(agv.id[3:])
-        #for key, value in self.map.items():
-        #    print(f"Key: {key}, Value: {value}")
-        """if(len(agv.traces) > 0):
-            if(agv.traces[0].id == 27):
-                pdb.set_trace()"""
+
         if idOfAGV in self.map:
             return self.map[idOfAGV]  
         else:
@@ -591,28 +497,13 @@ class Graph:
         ID1 = int(input("Nhap ID1: ")) if id1 == -1 else id1
         ID2 = int(input("Nhap ID2: ")) if id2 == -1 else id2
         endID = int(input("Nhap ID thực sự khi AGV kết thúc hành trình: ")) if end_id == -1 else end_id
-        M = self.numberOfNodesInSpaceGraph
+        M = self.number_of_nodes_in_space_graph
         time1, time2 = ID1 // M - (1 if ID1 % M == 0 else 0), ID2 // M - (1 if ID2 % M == 0 else 0)
-        #if i2 - i1 != C12:
-        #    print('Status: i2 - i1 != C12')
-        #    ID2 = ID1 + M * C12
-        #existing_edges = set()
-        """old_time_window_edges = []
-        for source_id, edges in self.adjacency_list.items():
-            for destination_id, edge in edges:
-                if isinstance(edge, TimeWindowEdge):
-                    old_time_window_edges.append(edge)"""
-        #current_time = time1 + C12 # Giá trị của current_time
         current_time = endID // M - (1 if endID % M == 0 else 0)
-        #if(current_time > self.graph_processor.H):
-        #    pdb.set_trace()
         if(current_time >= self.graph_processor.H):
             pdb.set_trace()
-        #current_time = current_time if current_time <= self.graph_processor.H else self.graph_processor.H
         new_node_id = current_time*M + (M if ID2 % M == 0 else ID2 % M)
-        #if(new_node_id == 13899):
-        #    pdb.set_trace()
-            
+
         # Duyệt qua từng phần tử của adjacency_list
         for source_id, edges in list(self.adjacency_list.items()):
             #if(source_id == 51265):
@@ -679,7 +570,7 @@ class Graph:
             
             #add TimeWindowEdge
             self.graph_processor.time_window_controller.generate_time_window_edges(\
-                self.nodes[source_id], self.adjacency_list, self.numberOfNodesInSpaceGraph)
+                self.nodes[source_id], self.adjacency_list, self.number_of_nodes_in_space_graph)
             
             self.graph_processor.restriction_controller.generate_restriction_edges(\
                 self.nodes[source_id], self.nodes[dest_id], self.nodes, self.adjacency_list)
@@ -707,25 +598,8 @@ class Graph:
                                 dest_id, 0, 1, self.H*self.H])
                         self.adjacency_list[edge[0]].append([dest_id, anEdge])"""
                         new_halting_edges.append([edge[0], dest_id, 0, 1, self.graph_processor.H*self.graph_processor.H])
-                """if(t >= self.graph_processor.H):
-                    if(edge[0] == 19685):
-                        pdb.set_trace()"""
-        #pdb.set_trace()
+
         self.write_to_file([agv_id, new_node_id], new_halting_edges)
-        #pdb.set_trace()
-        """for node in self.graph_processor.ts_nodes:
-            if node.id not in self.nodes:
-                self.nodes[node.id] = node
-        
-        for edge in self.graph_processor.tsedges:
-            source_id = edge.start_node.id
-            end_id = edge.end_node.id
-            if source_id not in self.adjacency_list or [end_id, edge] not in self.adjacency_list[source_id]:
-                if source_id not in self.adjacency_list:
-                    self.adjacency_list[source_id] = []
-                self.adjacency_list[source_id].append([end_id, edge])
-        
-        self.write_to_file()"""
 
     def reset_agv(self, real_node_id, agv):
         for node_id in self.nodes.keys():
@@ -755,22 +629,10 @@ class Graph:
     def getAllNewStartedNodes(self, excludedAgv = None):
         from .AGV import AGV
         allAGVs = AGV.all_instances()
-        #pdb.set_trace()
-        """for id in self.nodes:
-            if self.nodes[id].agv is not None:
-                if(excludedAgv is not None):
-                    if(self.nodes[id].agv.id == excludedAgv.id):
-                        continue
-                if(len(allAGVs) == 0):
-                    allAGVs.add(self.nodes[id].agv)
-                elif any(agv.id == self.nodes[id].agv.id for agv in allAGVs):
-                    allAGVs.add(self.nodes[id].agv)"""
         started_nodes = set()
         from .ReachingTargetEvent import ReachingTargetEvent
         for agv in allAGVs:
             if(not isinstance(agv.event, ReachingTargetEvent)):
-                #if(len(agv.path) > 0):
-                # #    started_nodes.append(agv.path[-1])
                 started_nodes.add(agv.current_node)
         if(len(started_nodes) == 0):
             return self.graph_processor.started_nodes
@@ -812,44 +674,13 @@ class Graph:
             new_nodes = set()
             for source_id, edges in sorted_edges:
                 for edge in edges:
-                    #if isinstance(edge[1], int):
-                    #    pdb.set_trace()
                     t = edge[0] // self.graph_processor.M - (1 if edge[0] % self.graph_processor.M == 0 else 0)
-                    """if(t > self.graph_processor.H):
-                        if(isinstance(self.nodes[edge[0]], TimeoutNode) and edge[0] not in new_nodes):                            
-                            #print(f'{self.nodes[edge[0]]} {edge[0] % self.graph_processor.M}')
-                            new_nodes.add(edge[0])"""
-                            #pdb.set_trace()
-                    """if(edge[0] == 19685):
-                        pdb.set_trace()"""
                     file.write(f"a {source_id} {edge[0]} {edge[1].lower} {edge[1].upper} {edge[1].weight}\n")  
             for edge in new_halting_edges:
                 file.write(f"a {edge[0]} {edge[1]} {edge[2]} {edge[3]} {edge[4]}\n")
-            #print("=================")
-        """if(new_halting_edges is not None and self.continueDebugging):
-            if(len(new_halting_edges) > 0):
-                pdb.set_trace()
-                continueDebugging = input("Bạn co muốn debug tiếp ở đây ko?: (Y/N)")
-                if continueDebugging == "N":
-                    self.continueDebugging = False"""
-        
-    """def update_edge(self, start_node, end_node, new_weight):
-        found = False
-        for i, (neighbor, weight) in enumerate(self.adjacency_list[start_node]):
-            if neighbor == end_node:
-                self.adjacency_list[start_node][i] = (end_node, new_weight)
-                found = True
-                break
-        if found:
-            print(f"Edge from {start_node} to {end_node} updated to new weight {new_weight}.")
-        else:
-            print(f"Edge from {start_node} to {end_node} not found to update.")"""
 
     def remove_node_and_origins(self, node_id):
-        #pdb.set_trace()
         from .Node import Node
-        #if(node_id == 51265):
-        #    pdb.set_trace()
         node = None
         if isinstance(node_id, Node):
             node = node_id
@@ -900,8 +731,6 @@ class Graph:
     
     def __str__(self):
         return "\n".join(f"{start} -> {end} (Weight: {weight})" for start in self.adjacency_list for end, weight in self.adjacency_list[start])
-    
-#graph = Graph()
 
 #def initialize_graph():
     # Function to populate the graph if needed

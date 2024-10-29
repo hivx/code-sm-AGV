@@ -111,18 +111,6 @@ def validate_pair_nodes(pairs, type = TypeOfCheckingG.UP, num_of_edges = 1):
         print('\tShortest path 1:', ' -> '.join(paths[0]))
     assert (len(paths) == 1) and len(paths[0]) == (num_of_edges + 1), \
         f'đường đi từ {source} đến {target} thì mong đợi {num_of_edges} trong khi thực tế len(paths[0]) = {len(paths[0])}'
-"""def validate_moving_right(move_right_list):
-    for tuple in move_right_list:
-        most_left = tuple[0]
-        most_right = tuple[1]
-        #pdb.set_trace()
-        num_of_edges = 1 if len(tuple) == 2 else tuple[2]
-        for i in range(most_left, most_right):
-            paths = find_shortest_paths(G, str(i), str(i+1))
-            if(len(paths[0]) != num_of_edges + 1):
-                print('\tShortest path 1:', ' -> '.join(paths[0]))
-            assert (len(paths) == 1) and len(paths[0]) == (num_of_edges + 1), \
-                f'đường đi từ {i} đến {i+1} thì mong đợi {num_of_edges} trong khi thực tế len(paths[0]) = {len(paths[0])}'"""
                 
 def read_graph_from_file(file_name):
     map_id3_id1 = {}

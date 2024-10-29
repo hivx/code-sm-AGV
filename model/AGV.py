@@ -101,15 +101,6 @@ class AGV:
                 print(self.id)
                 pdb.set_trace()
                 self.current_node = self._traces.pop(0)
-                """if (self._traces[0].id == 13899):
-                    print("+++++++++++++++++++++++")"""
-            #24 09 01
-            """if isinstance(self.current_node, (int, np.int64)):
-                self.path.add(self.current_node)
-            else:
-                self.path.add(self.current_node.id)
-                self.current_node = self.current_node.id"""
-            #print(f"{self.path}")
             next_node = None
             for node in self._traces:
                 if(node.agv == self):
@@ -125,30 +116,9 @@ class AGV:
             return None
     
     def get_traces(self):
-        """if(self._traces != None):
-            if len(self._traces) >= 1:
-                if self._traces[0].id == 13899:
-                    #pdb.set_trace()
-                    # Lấy thông tin về khung hiện tại
-                    current_frame = inspect.currentframe()
-                    # Lấy tên của hàm gọi my_function
-                    caller_name = inspect.getframeinfo(current_frame.f_back).function
-                    #if(self.graph.graph_processor.print_out):
-                    print(f'AGV.py:74 {caller_name}')
-                    print(f'{getframeinfo(currentframe()).filename.split("/")[-1]}:{getframeinfo(currentframe()).lineno} {self.id}', end=' ')"""
         return self._traces
     
     def set_traces(self, traces):
-        """if(self._traces != None):
-            if len(self._traces) >= 1:
-                if self._traces[0].id == 13899:
-                    #pdb.set_trace()
-                    # Lấy thông tin về khung hiện tại
-                    current_frame = inspect.currentframe()
-                    # Lấy tên của hàm gọi my_function
-                    caller_name = inspect.getframeinfo(current_frame.f_back).function
-                    #if(self.graph.graph_processor.print_out):
-                    print(f'AGV.py:88 {caller_name}')"""
         self._traces = traces
     
     def update_traces(self, predicted_id_node, real_node):

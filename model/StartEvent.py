@@ -11,8 +11,6 @@ class StartEvent(Event):
         #pdb.set_trace()
         if(self.graph.graph_processor.print_out):
             print(f"StartEvent processed at time {self.start_time} for {self.agv.id}. The AGV is currently at node {self.agv.current_node}.")
-        #self.determine_next_event()
-        #self.getNext(True)
         self.getNext()
         
     def __str__(self):
@@ -20,10 +18,8 @@ class StartEvent(Event):
     
     def getNext(self, debug = False):
         self.solve()
-        #next_vertex = self.agv.get_next_node()
         if(debug):
             pdb.set_trace()
         next_node = self.graph.nodes[self.agv.current_node]
-        #new_event = next_node.getEventForReaching(self)
         new_event = next_node.goToNextNode(self)
         simulator.schedule(new_event.end_time, new_event.process)

@@ -34,10 +34,6 @@ class NetworkXSolution:
         end_time = time.time()
         config.timeSolving += (end_time - start_time)
         config.totalSolving += 1
-        #print(type(self.flowDict))
-        #return [flowCost, flowDict]
-        """print("flowCost:", flowCost)
-        print("flowDict:", flowDict)"""
     def write_trace(self, file_path = 'traces.txt'):
         #pdb.set_trace()
         filtered_data = {}
@@ -58,16 +54,3 @@ class NetworkXSolution:
                         result = inner_value*cost
                         #print(f"a {key} {inner_key} 0 + {result} = {result}")
                         file.write(f"a {key} {inner_key} 0 + {result} = {result}\n")
-
-# Đường dẫn đến file DIMAC của bạn
-"""file_path = input("Path to DIMAC file:")
-read_dimac_file(file_path)"""
-"""G = nx.DiGraph()
-G.add_node("a", demand=-1)
-G.add_node("c", demand=1)
-G.add_edge("a", "b", weight=3, capacity=1)
-G.add_edge("b", "c", weight=0, capacity=1)
-G.add_edge("a", "c", weight=5, capacity=1)
-flowCost, flowDict = nx.network_simplex(G)
-print("flowCost:", flowCost)
-print("flowDict:", flowDict)"""

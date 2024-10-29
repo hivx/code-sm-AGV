@@ -8,16 +8,13 @@ from model.RestrictionNode import RestrictionNode
 from model.TimeWindowEdge import TimeWindowEdge
 from model.RestrictionEdge import RestrictionEdge
 import config
-#from discrevpy import simulator
 from GraphProcessor import GraphProcessor
 import subprocess
 import sys
 import pdb
 
 def assert_Nodes(graph, current_time):
-    #pdb.set_trace()
-    #group = []
-    M = graph.numberOfNodesInSpaceGraph
+    M = graph.number_of_nodes_in_space_graph
     count = 0
     numOfNodes = max(graph.nodes, key=int) + 1 #because it includes 0
     descrease = 0
@@ -45,7 +42,7 @@ def assert_Nodes(graph, current_time):
 
 
 def assert_Edges(graph, current_time):
-    M = graph.numberOfNodesInSpaceGraph
+    M = graph.number_of_nodes_in_space_graph
     for source_id, edges in graph.adjacency_list.items():
         for destination_id, edge in edges:
             if not isinstance(edge, (TimeWindowEdge, RestrictionEdge)):
@@ -73,7 +70,7 @@ def assert_number_TimeWindowEdges(graph, current_time):
         for destination_id, edge in edges:
             if isinstance(edge, TimeWindowEdge):
                 old_time_window_edges.append(edge)
-    M = graph.numberOfNodesInSpaceGraph
+    M = graph.number_of_nodes_in_space_graph
     new_time_window_edges = [edge for edge in old_time_window_edges if (edge.start_node.id // M - (1 if edge.start_node.id % M == 0 else 0)) >= current_time]
 
     old_edges_count = len(old_time_window_edges)
@@ -94,7 +91,7 @@ def assert_new_RestrictionNodes(graph):
             if isinstance(edge, TimeWindowEdge):
                 old_time_window_edges.append(edge)
 
-    M = graph.numberOfNodesInSpaceGraph
+    M = graph.number_of_nodes_in_space_graph
     
     old_restriction_edges = [edge for edge in old_time_window_edges if isinstance(edge, RestrictionEdge) and not isinstance(edge.start_node, RestrictionNode)]
     new_restriction_edges = [edge for edge in old_restriction_edges if (edge.start_node.id // M - (1 if edge.start_node.id % M == 0 else 0)) >= current_time]
@@ -108,7 +105,7 @@ def assert_new_RestrictionNodes(graph):
     "Number of new RestrictionEdges with non-RestrictionNode start nodes does not meet the constraint"
 
 def assert_numberOf_RestrictionNodes(graph):
-    M = graph.numberOfNodesInSpaceGraph
+    M = graph.number_of_nodes_in_space_graph
     # Lấy danh sách các TimeWindowEdge
     old_time_window_edges = []
     for source_id, edges in graph.adjacency_list.items():
@@ -161,10 +158,7 @@ while(count <= 1):
     processor.alpha = 1
     processor.beta = 1
     processor.add_time_windows_constraints()
-    #assert len(processor.ts_edges) == len(processor.tsedges), f"Thiếu cạnh ở đâu đó rồi {len(processor.ts_edges)} != {len(processor.tsedges)}"
     count += 1
-#processor.update_tsg_with_T()
-#processor.add_restrictions()
 processor.gamma = 1
 processor.restriction_count = 1
 processor.start_ban = 2
@@ -173,15 +167,7 @@ processor.restrictions = [[2, 3]]
 processor.ur = 1
 processor.process_restrictions()
 
-#realTime = int(input("Thời gian thực tế: "))
-#predictedChange = int(input("Sự thay đổi thời gian dự kiến của các cạnh còn lại: "))
-
 graph = Graph(processor)
-"""for edge in processor.tsedges:
-    start = edge.start_node
-    end = edge.end_node
-    graph.insertEdgesAndNodes(start, end, edge)"""
-
 #pdb.set_trace()
 processor.init_nodes_n_edges(graph)
 assert (graph.count_edges() == len(processor.tsedges)), "Missing some edges elsewhere"
@@ -190,8 +176,6 @@ assert (len(graph.nodes) == len(processor.ts_nodes)), f"Missing some nodes elsew
 id1 = 1
 id2 = 8
 c12 = 3
-#processor.update_file(id1, id2, c12)
-#pdb.set_trace()
 graph.update_graph(id1, id2, c12)
 current_time = id1 // processor.M + c12
 #pdb.set_trace()

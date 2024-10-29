@@ -18,7 +18,6 @@ class DimacsFileReader:
         self.zero_nodes_dict = {}
         self.arc_descriptors_dict = {}
         self.earliness_tardiness_dict = {}
-        #self.graph_version = graph_version
 
     def read_dimacs_file(self, file_path):
         # DIMACS format: p <problem_type> <num_nodes> <num_arcs>
@@ -160,8 +159,6 @@ class ForecastingModel:
     
     @graph.setter
     def graph(self, value):
-        #if(self.id == 'AGV4' and False):
-        #    pdb.set_trace()
         self._graph = value
     
 
@@ -497,7 +494,6 @@ class ForecastingModel:
                         file.write(f"a {trace[0]} {trace[1]}    {cost}  +  {trace[2]}  =  {cost + trace[2]}\n")
                         cost += trace[2]
         else:
-            #pdb.set_trace()
             #print("No solution found")
             pass
         #print(f"version of graph : {graph_version}")

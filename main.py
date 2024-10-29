@@ -81,22 +81,18 @@ while(config.count < 2):
     graph = Graph(graph_processor)  # Assuming a Graph class has appropriate methods to handle updates
     
     events = []
-    Event.setValue("numberOfNodesInSpaceGraph", graph_processor.M) #sẽ phải đọc file Edges.txt để biết giá trị cụ thể
+    Event.setValue("number_of_nodes_in_space_graph", graph_processor.M) #sẽ phải đọc file Edges.txt để biết giá trị cụ thể
     Event.setValue("debug", 0)
     # Kiểm tra xem có tham số nào được truyền qua dòng lệnh không
     if len(sys.argv) > 1:
         Event.setValue("debug", 1 if sys.argv[1] == '-g' else 0)
     
-    numberOfNodesInSpaceGraph = Event.getValue("numberOfNodesInSpaceGraph")
+    number_of_nodes_in_space_graph = Event.getValue("number_of_nodes_in_space_graph")
     # Mở file để đọc
     #pdb.set_trace()
     graph_processor.init_agvs_n_events(allAGVs, events, graph)
     graph_processor.init_tasks(TASKS)
-    graph_processor.init_nodes_n_edges(graph)
-    # assert (graph.count_edges() == len(graph_processor.tsedges)), "Missing some edges elsewhere"
-    # #pdb.set_trace()
-    # assert (len(graph.nodes) == len(graph_processor.ts_nodes)), f"Missing some nodes elsewhere as {len(graph.nodes)} != {len(graph_processor.ts_nodes)}"
-    
+    graph_processor.init_nodes_n_edges(graph) 
     events = sorted(events, key=lambda x: x.start_time)
     Event.setValue("allAGVs", allAGVs)
     
@@ -120,7 +116,6 @@ while(config.count < 2):
         import time
         start_time = time.time()
         simulator.ready()
-        #events = parse_tsg_file('TSG_0.txt')
         schedule_events(events)
         simulator.run()
         end_time = time.time()

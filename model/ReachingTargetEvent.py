@@ -6,14 +6,8 @@ class ReachingTargetEvent(Event):
     def __init__(self, start_time, end_time, agv, graph, target_node):
         super().__init__(start_time, end_time, agv, graph)
         self.target_node = target_node
-        #pdb.set_trace()
-        #if(target_node not in self.graph.nodes):
-        #    pdb.set_trace()
         node = self.graph.nodes[target_node]
-        M = self.graph.numberOfNodesInSpaceGraph
-        #time = self.agv.current_node // M \
-        #    - (1 if self.agv.current_node % M == 0 else 0)
-        #pdb.set_trace()
+        M = self.graph.number_of_nodes_in_space_graph
         if not hasattr(node, 'earliness'):
             try:
                 node = next(node for node in self.graph.graph_processor.get_targets() if node.id == target_node)
@@ -21,8 +15,6 @@ class ReachingTargetEvent(Event):
                 self.graph.nodes[target_node] = node
             except StopIteration:
                 pass
-                #print(f"Không tìm thấy đối tượng Node với id {target_node}.")
-                #pdb.set_trace()
         self.earliness = node.earliness
         self.tardiness = node.tardiness
         #if(self.end_time != time):
@@ -31,17 +23,6 @@ class ReachingTargetEvent(Event):
         t1 = [self.earliness - self.end_time, 0, self.end_time - self.tardiness]
         
         self.last_cost = self.graph.graph_processor.beta*(max(t1))/self.graph.graph_processor.alpha
-        #print(f'{t1} {max(t1)} last_cost {self.last_cost}')
-        #self.last_cost = self.graph.get_edge(self.agv.current_node, self.target_node)
-        """for node, earliness, tardiness in \
-            self.graph.graph_processor.time_window_controller.TWEdges[self.agv.current_node]:
-                if(node == self.target_node):
-                    M = self.graph.numberOfNodesInSpaceGraph
-                    time = self.agv.current_node // M \
-                        - (1 if self.agv.current_node % M == 1 else 0)
-                    cost = self.graph.beta*(max([earliness - time, 0, time - tardiness]))
-                    self.last_cost = cost
-                    break"""
         if(self.graph.graph_processor.print_out):
             print(f"Last cost: {self.last_cost}")
         self.updateGraph()  # Optional: update the graph if necessary
@@ -76,7 +57,6 @@ class ReachingTargetEvent(Event):
     def calculateCost(self):
         # Retrieve the weight of the last edge traversed by the AGV
         if self.agv.previous_node is not None and self.target_node is not None:
-            #last_edge_weight = self.graph.get_edge(self.agv.current_node, self.target_node)
             last_edge_weight = self.last_cost
             if last_edge_weight is not None:
                 # Calculate cost based on the weight of the last edge
@@ -99,7 +79,7 @@ class ReachingTargetEvent(Event):
         cost = 0
         deltaCost = 0
         prev = 0
-        M = self.graph.numberOfNodesInSpaceGraph 
+        M = self.graph.number_of_nodes_in_space_graph 
         D = self.graph.graph_processor.d
         P = len(path)
         for i in range(P):

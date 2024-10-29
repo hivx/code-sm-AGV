@@ -30,7 +30,6 @@ def filter_lines(seq_file_path, input_file_path, H):
 
 	for element in X:
 		for line in input_lines:
-			#real = element % H
 			new_element = "a " + element + " " #"(" + real + ")"
 			if new_element in line:
 				inc = int(line.strip().split()[-1]);

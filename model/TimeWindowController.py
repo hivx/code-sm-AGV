@@ -3,7 +3,6 @@ import pdb
 from collections import deque, defaultdict
 from .utility import utility
 import inspect
-#from .RestrictionNode import RestrictionNode
 from .TimeWindowNode import TimeWindowNode
 from .TimeWindowEdge import TimeWindowEdge
 from .Node import Node
@@ -23,8 +22,6 @@ class TimeWindowController:
             node.set_time_window(earliness, tardiness)
             if(not source_id in self.TWEdges):
                 self.TWEdges[source_id] = []
-            #if(source_id == 18):
-            #    pdb.set_trace()
             found = False
             for old_node, _, _ in self.TWEdges[source_id]:
                 if(old_node.id == node.id):
@@ -41,7 +38,6 @@ class TimeWindowController:
         space_id = (M if node.id % M == 0 else node.id % M)
         time = node.id // M - (1 if node.id % M == 0 else 0)
         if(space_id in self.TWEdges):
-            #nodes[node.id] = TimeWindowNode(node.id, "TimeWindow")
             for target_node, earliness, tardiness in self.TWEdges[space_id]:
                 found = False
                 if(node.id in adj_edges):
@@ -51,9 +47,6 @@ class TimeWindowController:
                 if(not found):
                     if(not node.id in adj_edges):
                         adj_edges[node.id] = []
-                    #target_node = self.TWEdges[space_id][0]
-                    #earliness = self.TWEdges[space_id][1]
-                    #tardiness = self.TWEdges[space_id][2]
                     i = node.id // M - (self.d if node.id % M == 0 else 0)
                     C = int(int(self.beta) * max(earliness - i, 0, i - tardiness) / int(self.alpha))
                     if(C < 0):

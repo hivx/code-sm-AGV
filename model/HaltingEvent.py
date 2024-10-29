@@ -19,8 +19,6 @@ class HaltingEvent(Event):
     def updateGraph(self):
         if(self.end_time >= self.graph.H):
             pass
-            #self.graph.update_edge(self.start_node, self.end_node, actual_time)  # Use self.graph instead of Graph
-            #self.graph.handle_edge_modifications(self.start_node, self.end_node, self.agv)  # Use self.graph instead of Graph
 
     def calculateCost(self):
         #pdb.set_trace()
@@ -33,7 +31,7 @@ class HaltingEvent(Event):
         cost = 0
         deltaCost = 0
         prev = 0
-        M = self.graph.numberOfNodesInSpaceGraph 
+        M = self.graph.number_of_nodes_in_space_graph 
         D = self.graph.graph_processor.d
         P = len(path)
         for i in range(P):

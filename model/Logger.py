@@ -39,7 +39,6 @@ class Logger:
         # Kiểm tra xem fileName có đuôi .csv chưa, nếu chưa thì thêm vào
         if not fileName.endswith('.csv'):
             fileName += '.csv'
-        #initialIndex = 1
 
         # Kiểm tra xem file đã tồn tại chưa
         file_exists = os.path.isfile(fileName)
@@ -54,7 +53,6 @@ class Logger:
                                  'Num of Reaching Target AGVs', 'Num of Halting AGVs', 
                                  'Objective Value', 'Running Time(s)', '# Of Solving'])
                 
-            #initialIndex = self.count_csv_rows(fileName)
             initialIndex = self.get_max_value(fileName, 'No') + 1
 
             # Thêm dòng dữ liệu mới
