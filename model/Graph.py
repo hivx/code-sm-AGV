@@ -754,7 +754,7 @@ class Graph:
     
     def getAllNewStartedNodes(self, excludedAgv = None):
         from .AGV import AGV
-        allAGVs = AGV.allInstances()
+        allAGVs = AGV.all_instances()
         #pdb.set_trace()
         """for id in self.nodes:
             if self.nodes[id].agv is not None:

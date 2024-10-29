@@ -20,7 +20,7 @@ class StartEvent(Event):
     
     def getNext(self, debug = False):
         self.solve()
-        #next_vertex = self.agv.getNextNode()
+        #next_vertex = self.agv.get_next_node()
         if(debug):
             pdb.set_trace()
         next_node = self.graph.nodes[self.agv.current_node]

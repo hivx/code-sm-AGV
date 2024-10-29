@@ -14,7 +14,7 @@ import networkx as nx
 import pdb
 from enum import Enum
 
-class TYPE_OF_CHECKING(Enum):
+class TypeOfCheckingG(Enum):
     UP = "↑"
     DOWN = "↓"
     LEFT = "<-"
@@ -100,12 +100,12 @@ def validate_pairs(G, pair_of_moving_vertically):
     print()
     print('-------------------------------------------------------------------------')
 
-def validate_pair_nodes(pairs, type = TYPE_OF_CHECKING.UP, num_of_edges = 1):
+def validate_pair_nodes(pairs, type = TypeOfCheckingG.UP, num_of_edges = 1):
     paths = []
     if(pairs[0] == 887 or pairs[1] == 887):
         pdb.set_trace()
-    source = pairs[0] if (type == TYPE_OF_CHECKING.DOWN or type == TYPE_OF_CHECKING.RIGHT) else pairs[1]
-    target = pairs[1] if (type == TYPE_OF_CHECKING.DOWN or type == TYPE_OF_CHECKING.RIGHT) else pairs[0]
+    source = pairs[0] if (type == TypeOfCheckingG.DOWN or type == TypeOfCheckingG.RIGHT) else pairs[1]
+    target = pairs[1] if (type == TypeOfCheckingG.DOWN or type == TypeOfCheckingG.RIGHT) else pairs[0]
     paths = find_shortest_paths(G, str(source), str(target))
     if(len(paths[0]) != num_of_edges + 1):
         print('\tShortest path 1:', ' -> '.join(paths[0]))
@@ -229,13 +229,13 @@ for i in range(113, 987, 38):
 left_and_right_checking = len(pair_of_moving_vertically[0])
         
 for i in range(0, up_and_down_checking):
-    pair_of_moving_vertically[1].append(TYPE_OF_CHECKING.UP if i % 2 == 1 else TYPE_OF_CHECKING.DOWN)
+    pair_of_moving_vertically[1].append(TypeOfCheckingG.UP if i % 2 == 1 else TypeOfCheckingG.DOWN)
 
 delta = left_and_right_checking - up_and_down_checking
 for j in range(0, 2):
     for i in range(up_and_down_checking + j*delta, up_and_down_checking + (j+1)*delta + 1):
-        pair_of_moving_vertically[1].append(TYPE_OF_CHECKING.LEFT if (i - up_and_down_checking - j*delta) \
-            % 2 == 1 else TYPE_OF_CHECKING.RIGHT)
+        pair_of_moving_vertically[1].append(TypeOfCheckingG.LEFT if (i - up_and_down_checking - j*delta) \
+            % 2 == 1 else TypeOfCheckingG.RIGHT)
     
 for i in range(40, 76):
     pair_of_moving_vertically[2].append(i)

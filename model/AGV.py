@@ -6,15 +6,15 @@ from inspect import currentframe, getframeinfo
 import numpy as np
 
 class AGV:
-    __allInstances = set()
-    def __init__(self, id, current_node, graph, cost = 0, versionOfGraph = -1):
+    _all_instances = set()
+    def __init__(self, id, current_node, graph, cost = 0, version_of_graph = -1):
         self.id = id
         self._current_node = current_node
         self.previous_node = None
         self._target_node = None
         self.state = 'idle'
         self._cost = cost
-        self.versionOfGraph = versionOfGraph
+        self.version_of_graph = version_of_graph
         self._traces = [] #các đỉnh sắp đi qua
         self._path = SortedSet([]) #các đỉnh đã đi qua 
         self.graph = graph
@@ -24,11 +24,11 @@ class AGV:
             self.graph.nodes[current_node] = node
         self.graph.nodes[current_node].agv = self
         self.event = None
-        AGV.__allInstances.add(self)
+        AGV._all_instances.add(self)
         
     def destroy(self):
         print(f"Huy doi tuong {self.id} trong ham huy __del__ cua AGV.py")
-        AGV.__allInstances.discard(self)
+        AGV._all_instances.discard(self)
         
     @property
     def current_node(self):
@@ -54,7 +54,7 @@ class AGV:
     
     """def __del__(self):
         #print(f"Huy doi tuong {self.id} trong ham huy __del__ cua AGV.py")
-        #AGV.__allInstances.discard(self)"""
+        #AGV._all_instances.discard(self)"""
     @property
     def cost(self):
         return self._cost
@@ -70,18 +70,18 @@ class AGV:
         return self._target_node
     
     @staticmethod
-    def allInstances():
-        return AGV.__allInstances
+    def all_instances():
+        return AGV._all_instances
     @staticmethod
     def reset():
-        AGV.__allInstances.clear()
+        AGV._all_instances.clear()
     
     @target_node.setter
     def target_node(self, value):
         if(value is None and (self.id == 'AGV23' or self.id == 'AGV32')):
             pdb.set_trace()
         self._target_node = value
-    def updateInfo(self, width, length, speed):
+    def update_info(self, width, length, speed):
         self.width = width
         self.length = length
         self.speed = speed
@@ -91,13 +91,13 @@ class AGV:
         if(self.graph.graph_processor.print_out):
             print(f"Cost updated for AGV {self.id}: {self.cost}.")
 
-    def getNextNode(self, endedEvent = False):
+    def get_next_node(self, ended_event = False):
         #stack = inspect.stack()
         #for frame in stack[1:]:
         #pdb.set_trace()
             #print(f"Hàm '{frame.function}' được gọi từ file '{frame.filename}' tại dòng {frame.lineno}")
         if self._traces:
-            if(endedEvent):
+            if(ended_event):
                 print(self.id)
                 pdb.set_trace()
                 self.current_node = self._traces.pop(0)

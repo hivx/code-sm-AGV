@@ -24,7 +24,7 @@ class TimeWindowNode(Node):
         return None
     
     def getEventForReaching(self, event):
-        #next_vertex = event.agv.getNextNode().id
+        #next_vertex = event.agv.get_next_node().id
         from .ReachingTargetEvent import ReachingTargetEvent
         if self.id == event.agv.target_node.id:
             #pdb.set_trace()

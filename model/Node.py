@@ -64,7 +64,7 @@ class Node:
         graph.add_edge(self.id, other_node.id, weight)
         
     def getEventForReaching(self, event):
-        #next_vertex = event.agv.getNextNode().id
+        #next_vertex = event.agv.get_next_node().id
         #event.agv.path.add(self.id)
         #print(f"========={event.agv.path}")
         from .HoldingEvent import HoldingEvent

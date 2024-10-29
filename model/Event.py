@@ -27,7 +27,7 @@ class Event:
         self.pns_path = ""
         #pdb.set_trace()
 
-    def setValue(name, value):
+    def set_value(self, name, value):
         if name == "debug":
             global debug
             debug = value
@@ -38,7 +38,7 @@ class Event:
             global allAGVs
             allAGVs = value
 
-    def getValue(name):
+    def get_value(self, name):
         if name == "debug":
             global debug
             return debug
@@ -101,7 +101,7 @@ class Event:
         if self.graph.numberOfNodesInSpaceGraph == -1:
             global numberOfNodesInSpaceGraph
             self.graph.numberOfNodesInSpaceGraph = numberOfNodesInSpaceGraph
-        if (self.graph.version != self.agv.versionOfGraph or self.graph.version == -1):
+        if (self.graph.version != self.agv.version_of_graph or self.graph.version == -1):
             self.find_path(DimacsFileReader, ForecastingModel)
 
     def getNext(self, debug = False):
@@ -150,7 +150,7 @@ class Event:
         #    pdb.set_trace()
         if(len(self.agv.get_traces()) == 0):
             pdb.set_trace()
-        next_vertex = self.agv.getNextNode()
+        next_vertex = self.agv.get_next_node()
         """if(next_vertex.id == 51265 or next_vertex.id == 51266):
             pdb.set_trace()"""
         if(next_vertex is None):
@@ -158,14 +158,14 @@ class Event:
         new_event = next_vertex.getEventForReaching(self)
 
         # Lên lịch cho sự kiện mới
-        # new_event.setValue("allAGVs", self.allAGVs)
+        # new_event.set_value("allAGVs", self.allAGVs)
         # simulator.schedule(new_event.end_time, new_event.getNext, self.graph)
         simulator.schedule(new_event.end_time, new_event.process)
 
     # TODO Rename this here and in `getNext`
     def find_path(self, DimacsFileReader, ForecastingModel):
         #pdb.set_trace()
-        if self.graph.version == -1 == self.agv.versionOfGraph:
+        if self.graph.version == -1 == self.agv.version_of_graph:
             #pdb.set_trace()
             self.updateGraph()
         filename = self.saveGraph()
@@ -202,7 +202,7 @@ class Event:
 
         #pdb.set_trace()
         #print(f"{self} {self.start_time} {self.end_time}")
-        if self.graph.version == -1 == self.agv.versionOfGraph:
+        if self.graph.version == -1 == self.agv.version_of_graph:
             self.graph.version += 1
         """print(f'{getframeinfo(currentframe()).filename.split("/")[-1]}:{getframeinfo(currentframe()).lineno} {self.agv.id}', end=' ')
         for node in self.agv.get_traces():
@@ -275,7 +275,7 @@ class Event:
                 if(len(temp) == 0):
                     break
             self.agv.set_traces(temp)
-        self.agv.versionOfGraph = self.graph.version
+        self.agv.version_of_graph = self.graph.version
         if self.agv.get_traces() == None:
             #pdb.set_trace()
             pass
@@ -296,13 +296,13 @@ class Event:
             for a in allAGVs:
                 #if a.id == 'AGV4':
                 #    pdb.set_trace()
-                if a.id != self.agv.id and a.versionOfGraph < self.graph.version:
+                if a.id != self.agv.id and a.version_of_graph < self.graph.version:
                     temp = self.graph.getTrace(a)
                     if temp != None:
                         if(temp[len(temp) - 1].id in allIDsOfTargetNodes):
                             a.set_traces(temp)
                     
-                    a.versionOfGraph = self.graph.version
+                    a.version_of_graph = self.graph.version
                     if(len(a.get_traces()) > 0):
                         target_node = a.get_traces()[len(a.get_traces()) - 1]
                     else:
