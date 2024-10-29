@@ -227,9 +227,7 @@ class GraphProcessor:
         ts_edges = self.ts_edges if checking_list == None else \
             [[item[1].start_node.id, item[1].end_node.id] for sublist in checking_list.values() for item in sublist]
         #[[edge.start_node, end_node] for (end_node, edge) in checking_list.values()]
-        var_value = os.environ.get('PRINT')
         count = 0
-        my_dict = {element: 1 for element in q}
         while q:
             #if var_value == 'insert_from_queue' or True:
                 # Thực hiện khối lệnh của bạn ở đây
@@ -286,10 +284,9 @@ class GraphProcessor:
                         if(checking_list == None):
                             self.ts_edges.append((ID, j, 0, upper, self.H))
                             self.check_and_add_nodes([ID, j], True, "Timeout")"""
-                    if(temp != None):
-                        if(checking_list == None):
-                            self.tsedges.append(temp)
-        if(checking_list == None):
+                    if temp is not None and checking_list is None:
+                        self.tsedges.append(temp)
+        if checking_list is None:
             assert len(self.ts_edges) == len(self.tsedges), f"Thiếu cạnh ở đâu đó rồi {len(self._edges)} != {len(self.ts_edges)}"
         return output_lines
 
@@ -434,7 +431,7 @@ class GraphProcessor:
             with open('TSG.txt', 'a') as file:
                 for ID, j, c in new_edges:
                     u, v = ID % self.M + (self.M if ID % self.M == 0 else 0), j % self.M + (self.M if j % self.M == 0 else 0)
-                    [upper, cost] = edges_with_cost[(u, v)] 
+                    [upper, _] = edges_with_cost[(u, v)] 
                     file.write(f"a {ID} {j} 0 {upper} {c}\n")
             print("Da cap nhat file TSG.txt.")
 
@@ -459,7 +456,7 @@ class GraphProcessor:
             self.restrictions.append((u, v))
         self.ur = int(input("Số lượng hạn chế: "))
 
-    def create_set_of_edges(self, edges, label = None):
+    def create_set_of_edges(self, edges):
         for e in edges:
             #self.tsedges.append(ArtificialEdge(self.find_node(e[0]), self.find_node(e[1]), e[4]))
             temp = self.find_node(e[0]).create_edge(self.find_node(e[1]), self.M, self.d, e)
@@ -467,7 +464,6 @@ class GraphProcessor:
         
     def process_restrictions(self):
         #pdb.set_trace()
-        S = set()
         R = []
         new_a = set()
         if(self.restriction_controller == None):
@@ -502,9 +498,7 @@ class GraphProcessor:
                         #R.add((ID1, ID2))
             assert len(self._edges) == len(self.tsedges), f"Thiếu cạnh ở đâu đó rồi {len(self.ts_edges)} != {len(self.ts_edges)}"
             self.ts_edges = [e for e in self._edges if [e[0], e[1]] not in [r[:2] for r in R]]
-            size1 = len(self.tsedges)
             self.tsedges = [e for e in self.tsedges if [e.start_node.id, e.end_node.id] not in [r[:2] for r in R]]
-            size2 = len(self.tsedges)
             #assert (size1 == size2 + len(R)), f"Số lượng self.ts_edges phải bị thay đổi, nhưng size1 = {size1}, size2 = {size2} và {len(R)}"
             #self.create_tsg_file()
             # Tạo các cung mới dựa trên các cung cấm
@@ -636,7 +630,6 @@ class GraphProcessor:
         else:
             ID = self.ID
             self.time_window_controller.add_source_and_TWNode(self.ID, target_node, self.earliness, self.tardiness)
-        R = set()
         new_edges = set()
         # Duyệt các dòng của file TSG.txt
         try:
@@ -1042,8 +1035,7 @@ class GraphProcessor:
                 self.tardiness = 6 if count == 0 else 9
                 self.alpha = 1
                 self.beta = 1
-            else:
-                pass
+
             self.add_time_windows_constraints()
             assert len(self.ts_edges) == len(self.tsedges), f"Thiếu cạnh ở đâu đó rồi {len(self.ts_edges)} != {len(self.tsedges)}"
             count += 1
