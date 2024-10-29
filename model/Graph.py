@@ -44,8 +44,6 @@ class Graph:
         from .TimeWindowNode import TimeWindowNode
         M = self.number_of_nodes_in_space_graph
         if(agv is not None):
-            #print(f'{agv.id}')
-            #pdb.set_trace()
             old_real_path = [(node % M + (M if node % M == 0 else 0)) for node in agv.path]
             real_start_id = start_id % M + (M if start_id % M == 0 else 0)
             for real_node in old_real_path:
@@ -130,29 +128,6 @@ class Graph:
             map_data = file.readlines()
         with open(function_file, 'r', encoding='utf-8') as file:
             function_data = file.readlines()
-        # process data
-        """
-        hallways_list = [
-            {
-                "hallway_id": "Region_1",
-                "length": 66, # change base on cost * 0.6
-                "width": 4, # constant default to 4
-                "agents_distribution": 15
-            },
-            {
-                "hallway_id": "Region_2",
-                "length": 66, # change base on cost * 0.6
-                "width": 4, # constant
-                "agents_distribution": 12
-            }
-        ]
-        """
-        """
-        functions_list = [
-            "y = 34 * x + 32 (0,50)",
-            "y = 3 * x + -100 (60,500)"
-        ]
-        """
         hallways_list = []
         functions_list = []
         for line in map_data:
@@ -392,7 +367,6 @@ class Graph:
             temp = []
             for id in self.nodes:
                 if self.nodes[id].agv == agv:
-                    #if(id == 13899 or id == 13898):
                     #    pdb.set_trace()
                     if(id not in self.map):
                         for old_id in self.map.keys():
@@ -413,7 +387,6 @@ class Graph:
                         temp = self.map[id]#13899
                         found = True
                     node = self.nodes[id]
-                    #if(found == False):
                     #    pdb.set_trace()
                     return [node, *temp]
                     #return s self.map[id]
@@ -498,7 +471,7 @@ class Graph:
         ID2 = int(input("Nhap ID2: ")) if id2 == -1 else id2
         endid = int(input("Nhap ID thực sự khi AGV kết thúc hành trình: ")) if end_id == -1 else end_id
         M = self.number_of_nodes_in_space_graph
-        time1, time2 = ID1 // M - (1 if ID1 % M == 0 else 0), ID2 // M - (1 if ID2 % M == 0 else 0)
+        _, time2 = ID1 // M - (1 if ID1 % M == 0 else 0), ID2 // M - (1 if ID2 % M == 0 else 0)
         current_time = endid // M - (1 if endid % M == 0 else 0)
         if(current_time >= self.graph_processor.H):
             pdb.set_trace()

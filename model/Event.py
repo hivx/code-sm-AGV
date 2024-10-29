@@ -92,7 +92,7 @@ class Event:
         if (self.graph.version != self.agv.version_of_graph or self.graph.version == -1):
             self.find_path(DimacsFileReader, ForecastingModel)
 
-    def getNext(self, debug = False):
+    def getNext(self):
         """global numOfCalling
         numOfCalling = numOfCalling + 1
         if(numOfCalling <= 5):

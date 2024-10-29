@@ -2,5 +2,5 @@ projectKey=sm-AGV
 serverUrl=http://localhost:9000
 serverVersion=10.7.0.96327
 dashboardUrl=http://localhost:9000/dashboard?id=sm-AGV
-ceTaskId=54ab4baa-e5bf-4e7f-85c8-3ce38ce4e393
-ceTaskUrl=http://localhost:9000/api/ce/task?id=54ab4baa-e5bf-4e7f-85c8-3ce38ce4e393
+ceTaskId=7b4aeaca-5be3-4352-8eab-0bb0a35a415e
+ceTaskUrl=http://localhost:9000/api/ce/task?id=7b4aeaca-5be3-4352-8eab-0bb0a35a415e
