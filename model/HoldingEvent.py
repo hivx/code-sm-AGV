@@ -7,7 +7,7 @@ class HoldingEvent(Event):
         self.duration = duration
         #print("Create event")
         #self.largest_id = get_largest_id_from_map("map.txt")
-        self.numberOfNodesInSpaceGraph = Event.get_value("numberOfNodesInSpaceGraph")
+        self.numberOfNodesInSpaceGraph = Event.getValue("numberOfNodesInSpaceGraph")
         #print(self)
 
     def updateGraph(self):

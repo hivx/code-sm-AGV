@@ -81,13 +81,13 @@ while(config.count < 2):
     graph = Graph(graph_processor)  # Assuming a Graph class has appropriate methods to handle updates
     
     events = []
-    Event.set_value("numberOfNodesInSpaceGraph", graph_processor.M) #sẽ phải đọc file Edges.txt để biết giá trị cụ thể
-    Event.set_value("debug", 0)
+    Event.setValue("numberOfNodesInSpaceGraph", graph_processor.M) #sẽ phải đọc file Edges.txt để biết giá trị cụ thể
+    Event.setValue("debug", 0)
     # Kiểm tra xem có tham số nào được truyền qua dòng lệnh không
     if len(sys.argv) > 1:
-        Event.set_value("debug", 1 if sys.argv[1] == '-g' else 0)
+        Event.setValue("debug", 1 if sys.argv[1] == '-g' else 0)
     
-    numberOfNodesInSpaceGraph = Event.get_value("numberOfNodesInSpaceGraph")
+    numberOfNodesInSpaceGraph = Event.getValue("numberOfNodesInSpaceGraph")
     # Mở file để đọc
     #pdb.set_trace()
     graph_processor.init_agvs_n_events(allAGVs, events, graph)
@@ -98,7 +98,7 @@ while(config.count < 2):
     # assert (len(graph.nodes) == len(graph_processor.ts_nodes)), f"Missing some nodes elsewhere as {len(graph.nodes)} != {len(graph_processor.ts_nodes)}"
     
     events = sorted(events, key=lambda x: x.start_time)
-    Event.set_value("allAGVs", allAGVs)
+    Event.setValue("allAGVs", allAGVs)
     
     
     def schedule_events(events):

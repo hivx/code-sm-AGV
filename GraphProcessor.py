@@ -312,7 +312,7 @@ class GraphProcessor:
         for node_id in self.started_nodes:
             #pdb.set_trace()
             agv = AGV("AGV" + str(node_id), node_id, graph)  # Create an AGV at this node
-            #print(Event.get_value("numberOfNodesInSpaceGraph"))
+            #print(Event.getValue("numberOfNodesInSpaceGraph"))
             start_time = node_id // self.M
             end_time = start_time
             start_event = StartEvent(start_time, end_time, agv, graph)  # Start event at time 0

@@ -27,7 +27,7 @@ class Event:
         self.pns_path = ""
         #pdb.set_trace()
 
-    def set_value(self, name, value):
+    def setValue(name, value):
         if name == "debug":
             global debug
             debug = value
@@ -38,7 +38,7 @@ class Event:
             global allAGVs
             allAGVs = value
 
-    def get_value(self, name):
+    def getValue(name):
         if name == "debug":
             global debug
             return debug
@@ -158,7 +158,7 @@ class Event:
         new_event = next_vertex.getEventForReaching(self)
 
         # Lên lịch cho sự kiện mới
-        # new_event.set_value("allAGVs", self.allAGVs)
+        # new_event.setValue("allAGVs", self.allAGVs)
         # simulator.schedule(new_event.end_time, new_event.getNext, self.graph)
         simulator.schedule(new_event.end_time, new_event.process)
 
