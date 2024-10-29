@@ -785,14 +785,12 @@ class Graph:
         m1 = max(edge[1] for edge in new_halting_edges)
         M = max(M, m1)
         num_halting_edges = len(new_halting_edges) if new_halting_edges is not None else 0
-        #with open(filename, "w") as file:
         #    file.write(f"p min {len(self.nodes)} {len(self.adjacency_list)}\n")
         #    for node in self.nodes:
         #        file.write(f"n {node} 1\n")
         #    for start_node in self.adjacency_list:
         #        for end_node, weight in self.adjacency_list[start_node]:
         #            file.write(f"a {start_node} {end_node} 0 1 {weight}\n")
-        maxid = len(self.nodes)
         #pdb.set_trace()
         sorted_edges = sorted(self.adjacency_list.items(), key=lambda x: x[0])
         num_edges = self.count_edges()
@@ -800,24 +798,10 @@ class Graph:
         
         with open(filename, 'w') as file:
             file.write(f"p min {M} {num_edges}\n")
-            """if(maxid == 8161 and num_edges == 13865):
-                pdb.set_trace()
-            for start in self.graph_processor.started_nodes:
-                #pdb.set_trace()
-                start_node = self.get_current_node(agv_id_and_new_start, start)
-                #if(start_node == 24):
-                #    pdb.set_trace()"""
-            #if(self.calling == 6):
             #    pdb.set_trace()
             
             started_nodes = self.getAllNewStartedNodes()
-            #buggySet1 = {43075, 42060}
-            #buggySet2 = {41988, 42060}
-            #if(started_nodes == buggySet1 or started_nodes == buggySet2):
-            #    #print(f'Graph.py:566 {started_nodes}')
-            #    pdb.set_trace()
-            #if(len(started_nodes) != len(self.graph_processor.get_targets())):
-            #    pdb.set_trace()
+
             for start_node in started_nodes:
                 file.write(f"n {start_node} 1\n")
             for target in self.graph_processor.get_targets():

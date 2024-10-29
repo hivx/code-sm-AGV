@@ -532,7 +532,7 @@ class GraphProcessor:
         #halting_nodes = 
         self.insert_halting_edges()
         
-        self.write_to_file(maxid)
+        self.write_to_file()
         #pdb.set_trace()
         
     def insert_halting_edges(self):
@@ -553,7 +553,7 @@ class GraphProcessor:
         self.ts_edges.extend(e for e in new_a if e not in self.ts_edges)
         self.create_set_of_edges(new_a)
     
-    def write_to_file(self, maxid, filename = "TSG.txt"):
+    def write_to_file(self):
         M = max(target.id for target in self.get_targets())
         with open('TSG.txt', 'w') as file:
             file.write(f"p min {M} {len(self.ts_edges)}\n")
@@ -712,7 +712,6 @@ class GraphProcessor:
 
           with open(json_filepath, 'r') as json_file:
               data = json.load(json_file)
-              agv_number = data["AGV"]["number"]
               itinerary_start = data["itinerary"]["start"]
               itinerary_end = data["itinerary"]["end"]
 
@@ -1013,7 +1012,7 @@ class GraphProcessor:
                 self.earliness = []
                 self.tardiness = []
                 #pdb.set_trace()
-                for i in range(num_of_agvs):
+                for _ in range(num_of_agvs):
                     [s, d, e, t] = self.generate_numbers_student(self.M, self.H, 12, 100)
                     self.started_nodes.append(s)
                     self.ID.append(d)
