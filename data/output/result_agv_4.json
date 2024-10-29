@@ -1,0 +1,11 @@
+{
+    "AGVCurrTime": 134660,
+    "AGVRealTime": 117660,
+    "agvId": 4,
+    "generalDirection": 1,
+    "hallwayLength": 66.0,
+    "hallwayName": "Region_1",
+    "numOfCollision": 3,
+    "totalStopTime": 4120,
+    "travelingTime": 113540
+}

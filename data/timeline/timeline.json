@@ -5,7 +5,15 @@
                 23
             ],
             "arcID": "Region_7",
-            "end_time": 72,
+            "end_time": 73,
+            "start_time": 17
+        },
+        {
+            "agvIDs": [
+                4
+            ],
+            "arcID": "Region_1",
+            "end_time": 116,
             "start_time": 17
         }
     ]

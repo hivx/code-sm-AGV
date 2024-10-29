@@ -496,10 +496,10 @@ class Graph:
         #self.add_edge(currentpos, nextpos, realtime)
         ID1 = int(input("Nhap ID1: ")) if id1 == -1 else id1
         ID2 = int(input("Nhap ID2: ")) if id2 == -1 else id2
-        endID = int(input("Nhap ID thực sự khi AGV kết thúc hành trình: ")) if end_id == -1 else end_id
+        endid = int(input("Nhap ID thực sự khi AGV kết thúc hành trình: ")) if end_id == -1 else end_id
         M = self.number_of_nodes_in_space_graph
         time1, time2 = ID1 // M - (1 if ID1 % M == 0 else 0), ID2 // M - (1 if ID2 % M == 0 else 0)
-        current_time = endID // M - (1 if endID % M == 0 else 0)
+        current_time = endid // M - (1 if endid % M == 0 else 0)
         if(current_time >= self.graph_processor.H):
             pdb.set_trace()
         new_node_id = current_time*M + (M if ID2 % M == 0 else ID2 % M)

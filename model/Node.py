@@ -55,7 +55,7 @@ class Node:
         current_node = event.agv.current_node.id if isinstance(event.agv.current_node, Node) else event.agv.current_node
 
         # Xác định kiểu sự kiện tiếp theo
-        deltaT = (self.id // event.graph.number_of_nodes_in_space_graph \
+        delta_t = (self.id // event.graph.number_of_nodes_in_space_graph \
                                 #- (event.graph.graph_processor.d if self.id % event.graph.number_of_nodes_in_space_graph == 0 else 0)) - (
                                 - (1 if self.id % event.graph.number_of_nodes_in_space_graph == 0 else 0)) - (
             current_node // event.graph.number_of_nodes_in_space_graph \
@@ -71,10 +71,10 @@ class Node:
                 event.agv.move_to(event)
             return HoldingEvent(
                 event.end_time,
-                event.end_time + deltaT,
+                event.end_time + delta_t,
                 event.agv,
                 event.graph,
-                deltaT,
+                delta_t,
             )
         elif self.id == event.agv.target_node.id:
             print(f"Target {event.agv.target_node.id}")
@@ -139,25 +139,25 @@ class Node:
         #    if(real_current_node == 21):
         #        pass
         #        #pdb.set_trace()
-        deltaT = event.graph.getReal(event.agv.current_node, next_vertex, event.agv)
+        delta_t = event.graph.getReal(event.agv.current_node, next_vertex, event.agv)
         all_ids_of_target_nodes = [node.id for node in event.graph.graph_processor.target_nodes]
         if(next_vertex in all_ids_of_target_nodes):
             return ReachingTargetEvent(\
                 event.end_time, event.end_time, event.agv, event.graph, next_vertex)
-        if(deltaT == 0):
+        if(delta_t == 0):
             #pdb.set_trace()
             pass
-        if event.end_time + deltaT < event.graph.graph_processor.H:
+        if event.end_time + delta_t < event.graph.graph_processor.H:
             return MovingEvent(
                 event.end_time,
-                event.end_time + deltaT,
+                event.end_time + delta_t,
                 event.agv,
                 event.graph,
                 event.agv.current_node,
                 next_vertex,
             )
         if(event.graph.graph_processor.print_out):
-            print(f"H = {event.graph.graph_processor.H} and {event.end_time} + {deltaT}")
+            print(f"H = {event.graph.graph_processor.H} and {event.end_time} + {delta_t}")
         return HaltingEvent(
             event.end_time,
             event.graph.graph_processor.H,
@@ -165,7 +165,7 @@ class Node:
             event.graph,
             event.agv.current_node,
             next_vertex,
-            deltaT
+            delta_t
         )
     
     def __repr__(self):

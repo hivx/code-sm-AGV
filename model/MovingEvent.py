@@ -47,22 +47,22 @@ class MovingEvent(Event):
         if(real_end_node in self.graph.nodes):
             if(self.graph.nodes[real_end_node].agv is not None):
                 if (self.graph.nodes[real_end_node].agv.id != self.agv.id):
-                    deltaT = 0
+                    delta_t = 0
                     new_event = None
                     while(True):
-                        deltaT = deltaT + 1
-                        real_end_node = real_end_node + M*deltaT
-                        if(self.end_time + deltaT < self.graph.graph_processor.H):
+                        delta_t = delta_t + 1
+                        real_end_node = real_end_node + M*delta_t
+                        if(self.end_time + delta_t < self.graph.graph_processor.H):
                             if(real_end_node in self.graph.nodes):
                                 if(self.graph.nodes[real_end_node].agv is not None):
                                     if (self.graph.nodes[real_end_node].agv.id != self.agv.id):
                                         continue
                             new_event = MovingEvent(self.start_time, \
-                                self.end_time + deltaT, self.agv, self.graph, self.agv.current_node, real_end_node)
+                                self.end_time + delta_t, self.agv, self.graph, self.agv.current_node, real_end_node)
                             break
                         else:
                             new_event = HaltingEvent(self.end_time, \
-                                self.graph.graph_processor.H, self.agv, self.graph, self.agv.current_node, real_end_node, deltaT)    
+                                self.graph.graph_processor.H, self.agv, self.graph, self.agv.current_node, real_end_node, delta_t)    
                             break                                    
                     simulator.schedule(new_event.end_time, new_event.process)
                     self.force_quit = True

@@ -3,11 +3,11 @@ import inspect
 import pdb
 import config
 class HaltingEvent(Event):
-    def __init__(self, start_time, end_time, agv, graph, start_node, end_node, deltaT):
+    def __init__(self, start_time, end_time, agv, graph, start_node, end_node, delta_t):
         super().__init__(start_time, end_time, agv, graph)
         self.start_node = start_node
         self.end_node = end_node
-        self.deltaT = deltaT
+        self.delta_t = delta_t
         #pdb.set_trace()
         current_frame = inspect.currentframe()
         # Lấy tên của hàm gọi my_function
@@ -51,7 +51,7 @@ class HaltingEvent(Event):
             else:
                 deltaCost = (float('inf') if(self.end_node != self.agv.target_node.id) else self.end_time - self.start_time)
                 cost = cost + deltaCost
-                print(f'({self.deltaT})/({deltaCost})==={real_node}===END. ', end='')
+                print(f'({self.delta_t})/({deltaCost})==={real_node}===END. ', end='')
             prev = path[i]
         print(f'Total cost: {cost}. The AGV reaches its destination at {self.end_time}')
     
@@ -66,7 +66,7 @@ class HaltingEvent(Event):
         print(
             f"AGV {self.agv.id} moves from {start}({space_start_node}) to {self.end_node}({space_end_node}) but time outs!!!!"
         )
-        print(f'Because it left {self.start_node }({self.start_node % M + (M if self.start_node % M == 0 else 0)}) as {self.start_time} and spending {self.deltaT} for moving')
+        print(f'Because it left {self.start_node }({self.start_node % M + (M if self.start_node % M == 0 else 0)}) as {self.start_time} and spending {self.delta_t} for moving')
         self.re_calculate(self.agv.path)
         self.calculateCost()
         print(f"The total cost of {self.agv.id} is {self.agv.cost}")
