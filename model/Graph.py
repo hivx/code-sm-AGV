@@ -78,8 +78,6 @@ class Graph:
                         result = e[4] if result == -1 else result
                 #pdb.set_trace()
                 result = abs(end_time - start_time) if result == -1 else result
-        #pdb.set_trace()
-        
         
         if config.sfm == True:
             #print(f"Using sfm for AGV {agv.id} from {start_id} to {next_id} at time {start_time}.")
@@ -103,24 +101,7 @@ class Graph:
                             next_id = next_id + M
         return result
         
-        
     def getReal_preprocess(self, Map_file, function_file):
-        # read 2 files Map_file(txt) and function_file(txt)
-        """
-        Map_file: a <src> <dest> <low> <cap> <cost> <hallway_id> <human_distribution_percentage>
-        if src < dest: left to right
-        if src > dest: right to left
-        a 1 2 0 1 1 Region_1 3
-        a 3 2 0 1 1 Region_1 4
-        a 1 4 0 1 1 Region_2 5
-        a 5 4 0 1 1 Region_2 3
-        ...
-        """
-        """
-        function_file: each line
-        y = 34 * x + 32 (0,50)
-        y = 3 * x + -100 (60,500)
-        """
         # read files
         map_data = None
         function_data = None
@@ -151,14 +132,6 @@ class Graph:
     def getAGVRuntime(self, Map_file, function_file, start_id, next_id, agv, current_time):
         hallways_list, functions_list = self.getReal_preprocess(Map_file, function_file)
         events_list = []  # actually only has one event but because of the structure of the code, it has to be a list
-        """
-        {
-            "AgvIDs": [0], # depends
-            "AgvDirections": [0], # depends
-            "time_stamp": 0, # depends
-            "hallway_id": "hallway_1" # depends
-        }
-        """
         # get the agv id from the agv object id: AGV1 -> 1
         agv_id = int(agv.id[3:])
         # get the direction of the agv by querying the hallways_list with the start_id and next_id
@@ -620,12 +593,6 @@ class Graph:
         m1 = max(edge[1] for edge in new_halting_edges)
         M = max(M, m1)
         num_halting_edges = len(new_halting_edges) if new_halting_edges is not None else 0
-        #    file.write(f"p min {len(self.nodes)} {len(self.adjacency_list)}\n")
-        #    for node in self.nodes:
-        #        file.write(f"n {node} 1\n")
-        #    for start_node in self.adjacency_list:
-        #        for end_node, weight in self.adjacency_list[start_node]:
-        #            file.write(f"a {start_node} {end_node} 0 1 {weight}\n")
         #pdb.set_trace()
         sorted_edges = sorted(self.adjacency_list.items(), key=lambda x: x[0])
         num_edges = self.count_edges()

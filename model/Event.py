@@ -134,49 +134,61 @@ class Event:
         simulator.schedule(new_event.end_time, new_event.process)
 
     def find_path(self, DimacsFileReader, ForecastingModel):
-        #pdb.set_trace()
-        if self.graph.version == -1 == self.agv.version_of_graph:
-            #pdb.set_trace()
-            self.updateGraph()
+        """ Find the optimal path for AGVs based on the configured solver choice. """
+        self.ensure_graph_updated()
         filename = self.saveGraph()
-        
-        """print(f'{getframeinfo(currentframe()).filename.split("/")[-1]}:{getframeinfo(currentframe()).lineno} {self.agv.id}', end=' ')
-        for node in self.agv.get_traces():
-            print(f'{node.id} 130', end= ' ')
-        print()"""
 
         if config.solver_choice == 'solver':
-            #print("----------------------------")
-            self.createTracesFromSolver(DimacsFileReader, filename, ForecastingModel)
-
+            self.run_solver_trace(DimacsFileReader, filename, ForecastingModel)
         elif config.solver_choice == 'network-simplex':
-            if len(self.pns_path) == 0:
-                self.pns_path = input("Enter the path for pns-seq: ")
-            command = f"{self.pns_path}/pns-seq -f {filename} > seq-f.txt"
-            print("Running network-simplex:", command)
-            subprocess.run(command, shell=True)
+            self.run_network_simplex(filename)
         elif config.solver_choice == 'networkx':
-            nx = NetworkXSolution()
-            nx.read_dimac_file('TSG.txt')
-            edges_with_costs = { (int(edge[1]), int(edge[2])): [int(edge[4]), int(edge[5])] for edge in self.graph.graph_processor.space_edges \
-                if edge[3] == '0' and int(edge[4]) >= 1 }
-            nx.edges_with_costs = edges_with_costs
-            nx.M = self.graph.graph_processor.M
-            #print(nx.flowCost)
-            nx.write_trace()
-            #pdb.set_trace()
+            self.run_networkx_solution()
 
-        if config.solver_choice == 'network-simplex':
-            command = "python3 filter.py > traces.txt"
-            subprocess.run(command, shell=True)
+        self.finalize_solution()
+        self.setTracesForAllAGVs()
 
+    def ensure_graph_updated(self):
+        """ Update the graph if versions are mismatched. """
+        if self.graph.version == -1 == self.agv.version_of_graph:
+            self.updateGraph()
+
+    def run_solver_trace(self, DimacsFileReader, filename, ForecastingModel):
+        """ Run the trace creation with the selected solver. """
+        print("Running solver for trace creation...")
+        self.createTracesFromSolver(DimacsFileReader, filename, ForecastingModel)
+
+    def run_network_simplex(self, filename):
+        """ Execute the network-simplex algorithm using an external command. """
+        if not self.pns_path:
+            self.pns_path = input("Enter the path for pns-seq: ")
+        command = f"{self.pns_path}/pns-seq -f {filename} > seq-f.txt"
+        print("Running network-simplex:", command)
+        subprocess.run(command, shell=True)
+        self.filter_traces()
+
+    def filter_traces(self):
+        """ Filter traces after network-simplex run. """
+        command = "python3 filter.py > traces.txt"
+        print("Filtering traces:", command)
+        subprocess.run(command, shell=True)
+
+    def run_networkx_solution(self):
+        """ Run the networkx solution for trace generation. """
+        nx = NetworkXSolution()
+        nx.read_dimac_file('TSG.txt')
+        nx.edges_with_costs = {
+            (int(edge[1]), int(edge[2])): [int(edge[4]), int(edge[5])]
+            for edge in self.graph.graph_processor.space_edges
+            if edge[3] == '0' and int(edge[4]) >= 1
+        }
+        nx.M = self.graph.graph_processor.M
+        nx.write_trace()
+
+    def finalize_solution(self):
+        """ Finalize solution by updating graph version. """
         if self.graph.version == -1 == self.agv.version_of_graph:
             self.graph.version += 1
-        """print(f'{getframeinfo(currentframe()).filename.split("/")[-1]}:{getframeinfo(currentframe()).lineno} {self.agv.id}', end=' ')
-        for node in self.agv.get_traces():
-            print(f'{node.id} 147', end= ' ')
-        print()"""
-        self.setTracesForAllAGVs()
 
     def createTracesFromSolver(self, DimacsFileReader, filename, ForecastingModel):
 
@@ -215,65 +227,48 @@ class Event:
         subprocess.run(command, shell=True)
 
     def setTracesForAllAGVs(self):
-        # Đọc và xử lý file traces để lấy các đỉnh tiếp theo
-        # with open(filename, "r") as file:
-        #    traces = file.read().split()
-        # return traces
-        # if not self.graph.map:
-        #     self.graph.setTrace("traces.txt")
-        #pdb.set_trace()
-        """print(f'{getframeinfo(currentframe()).filename.split("/")[-1]}:{getframeinfo(currentframe()).lineno} {self.agv.id}', end=' ')
-        for node in self.agv.get_traces():
-            print(node.id, end= ' ')
-        print()"""
+        """ Set traces for all AGVs based on current graph traces and target nodes. """
         self.graph.setTrace("traces.txt")
-
-        if(self.agv.get_traces() != None):
-            #print("Truoc khi gan thi ko None")
-            pass
-        temp = self.graph.getTrace(self.agv) 
-        all_ids_of_target_nodes = [node.id for node in self.graph.graph_processor.target_nodes]
-        #self.agv.set_traces(temp if temp != None else self.agv.get_traces())
-        if temp != None:
-            while(temp[-1].id not in all_ids_of_target_nodes):
-                temp.pop()
-                if(len(temp) == 0):
-                    break
-            self.agv.set_traces(temp)
+        
+        # Thiết lập traces cho AGV hiện tại
+        temp_trace = self.graph.getTrace(self.agv)
+        target_node_ids = {node.id for node in self.graph.graph_processor.target_nodes}
+        
+        # Chỉ giữ lại các node hợp lệ trong trace của AGV
+        if temp_trace:
+            temp_trace = self.trim_trace_to_target(temp_trace, target_node_ids)
+            self.agv.set_traces(temp_trace)
+        
+        # Cập nhật phiên bản của đồ thị cho AGV
         self.agv.version_of_graph = self.graph.version
-        if self.agv.get_traces() == None:
-            #pdb.set_trace()
-            pass
-        #else:
-        elif len(self.agv.get_traces()) > 0:
-            target_node = self.agv.get_traces()[len(self.agv.get_traces()) - 1]
-        else:
-            target_node = self.agv.target_node
-        if(target_node is not None):    
-            if target_node.id in all_ids_of_target_nodes and len(self.agv.get_traces()) > 0:
-                self.agv.target_node = self.graph.graph_processor.get_target_by_id(target_node.id)
-            global allAGVs
-            #pdb.set_trace()
-            for a in allAGVs:
-                if a.id != self.agv.id and a.version_of_graph < self.graph.version:
-                    temp = self.graph.getTrace(a)
-                    if temp != None:
-                        if(temp[len(temp) - 1].id in all_ids_of_target_nodes):
-                            a.set_traces(temp)
-                    
-                    a.version_of_graph = self.graph.version
-                    if(len(a.get_traces()) > 0):
-                        target_node = a.get_traces()[len(a.get_traces()) - 1]
-                    else:
-                        target_node = a.target_node
-                    if(target_node is not None):
-                        if target_node.id in all_ids_of_target_nodes:
-                            a.target_node = self.graph.graph_processor.get_target_by_id(target_node.id)
-                """print(f'{getframeinfo(currentframe()).filename.split("/")[-1]}:{getframeinfo(currentframe()).lineno} {a.id}', end=' ')
-                for node in a.get_traces():
-                    print(node.id, end= ' ')
-                print()"""
+        self.update_target_node(self.agv, target_node_ids)
 
+        # Thiết lập traces cho tất cả các AGVs khác
+        global allAGVs
+        for agv in allAGVs:
+            if agv.id != self.agv.id and agv.version_of_graph < self.graph.version:
+                temp_trace = self.graph.getTrace(agv)
+                if temp_trace:
+                    temp_trace = self.trim_trace_to_target(temp_trace, target_node_ids)
+                    agv.set_traces(temp_trace)
+                agv.version_of_graph = self.graph.version
+                self.update_target_node(agv, target_node_ids)
+
+    def trim_trace_to_target(self, trace, target_node_ids):
+        """ Trim trace to only include nodes leading to the target node. """
+        while trace and trace[-1].id not in target_node_ids:
+            trace.pop()
+        return trace
+
+    def update_target_node(self, agv, target_node_ids):
+        """ Update the target node for the AGV based on current traces. """
+        if agv.get_traces():
+            target_node = agv.get_traces()[-1]
+        else:
+            target_node = agv.target_node
+        
+        if target_node and target_node.id in target_node_ids:
+            agv.target_node = self.graph.graph_processor.get_target_by_id(target_node.id)
 
 def get_largest_id_from_map(filename):
     largest_id = 0

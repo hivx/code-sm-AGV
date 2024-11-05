@@ -88,76 +88,75 @@ class Node:
             return self.goToNextNode(event)
 
     def goToNextNode(self, event):
-        from .Event import Event
-        from .StartEvent import StartEvent
-        from .MovingEvent import MovingEvent
-        from .HaltingEvent import HaltingEvent
-        from .ReachingTargetEvent import ReachingTargetEvent
-        if(not isinstance(event, StartEvent)):
+        if not self._is_start_event(event):
             event.agv.move_to(event)
-        M = event.graph.graph_processor.M
-        if(len(event.agv.get_traces()) > 0):
-            #pdb.set_trace()
-            next_vertex = event.agv.get_traces()[0].id
-        else:
-            next_vertex = -1
-            reaching_time = self.id // M - (1 if self.id % M == 0 else 0)
-            for source_id in event.graph.graph_processor.time_window_controller.TWEdges:
-                if(source_id % M == self.id % M):
-                    #pdb.set_trace()
-                    if(event.graph.graph_processor.time_window_controller.TWEdges[source_id] is not None):
-                        edges = event.graph.graph_processor.time_window_controller.TWEdges[source_id]
-                        if(len(edges) == 0):
-                            pdb.set_trace()
-                        else:
-                            max_cost = edges[0][0].calculate(reaching_time)
-                            index = 0
-                            for i in range(1, len(edges)):
-                                temp = edges[i][0].calculate(reaching_time)
-                                if temp > max_cost:
-                                    max_cost = temp
-                                    index = i
-                            next_vertex = edges[index][0].id
-                            if(event.agv.target_node is None or event.agv.target_node.id != next_vertex):
-                                event.agv.target_node = edges[index][0]
-                            break
-            if(next_vertex == -1):
-                pdb.set_trace()
         
-        """edges_with_cost = { (int(edge[1]), int(edge[2])): [int(edge[4]), int(edge[5])] for edge in event.graph.graph_processor.space_edges \
-            if edge[3] == '0' and int(edge[4]) >= 1 }
-        space_start_node = event.agv.current_node % M + (M if event.agv.current_node % M == 0 else 0)
-        space_end_node = next_vertex % M + (M if next_vertex % M == 0 else 0)
-        min_moving_time = edges_with_cost.get((space_start_node, space_end_node), [-1, -1])[1]
-        if(min_moving_time == -1):
-            pdb.set_trace()"""
-        #if(event.agv.current_node != self.id):
-        #    #pass
-        #    #pdb.set_trace()
-        #if (event.agv.id == 'AGV30'):
-        #    real_current_node = event.agv.current_node % M + (M if event.agv.current_node % M == 0 else 0)
-        #    if(real_current_node == 21):
-        #        pass
-        #        #pdb.set_trace()
+        M = event.graph.graph_processor.M
+        next_vertex = self._get_next_vertex(event, M)
+        
+        if next_vertex == -1:
+            pdb.set_trace()
+        
         delta_t = event.graph.getReal(event.agv.current_node, next_vertex, event.agv)
         all_ids_of_target_nodes = [node.id for node in event.graph.graph_processor.target_nodes]
-        if(next_vertex in all_ids_of_target_nodes):
-            return ReachingTargetEvent(\
-                event.end_time, event.end_time, event.agv, event.graph, next_vertex)
-        if(delta_t == 0):
-            #pdb.set_trace()
+        
+        if next_vertex in all_ids_of_target_nodes:
+            return self._create_reaching_target_event(event, next_vertex)
+        
+        if delta_t == 0:
             pass
+        
         if event.end_time + delta_t < event.graph.graph_processor.H:
-            return MovingEvent(
-                event.end_time,
-                event.end_time + delta_t,
-                event.agv,
-                event.graph,
-                event.agv.current_node,
-                next_vertex,
-            )
-        if(event.graph.graph_processor.print_out):
+            return self._create_moving_event(event, next_vertex, delta_t)
+        
+        if event.graph.graph_processor.print_out:
             print(f"H = {event.graph.graph_processor.H} and {event.end_time} + {delta_t}")
+        
+        return self._create_halting_event(event, next_vertex, delta_t)
+
+    def _is_start_event(self, event):
+        from .StartEvent import StartEvent
+        return isinstance(event, StartEvent)
+
+    def _get_next_vertex(self, event, M):
+        if event.agv.get_traces():
+            return event.agv.get_traces()[0].id
+        return self._find_next_vertex_from_edges(event, M)
+
+    def _find_next_vertex_from_edges(self, event, M):
+        reaching_time = self.id // M - (1 if self.id % M == 0 else 0)
+        for source_id in event.graph.graph_processor.time_window_controller.TWEdges:
+            if source_id % M == self.id % M:
+                edges = event.graph.graph_processor.time_window_controller.TWEdges.get(source_id)
+                if edges:
+                    return self._get_max_cost_vertex(edges, reaching_time)
+        return -1
+
+    def _get_max_cost_vertex(self, edges, reaching_time):
+        max_cost, index = edges[0][0].calculate(reaching_time), 0
+        for i, edge in enumerate(edges[1:], 1):
+            temp_cost = edge[0].calculate(reaching_time)
+            if temp_cost > max_cost:
+                max_cost, index = temp_cost, i
+        return edges[index][0].id
+
+    def _create_reaching_target_event(self, event, next_vertex):
+        from .ReachingTargetEvent import ReachingTargetEvent
+        return ReachingTargetEvent(event.end_time, event.end_time, event.agv, event.graph, next_vertex)
+
+    def _create_moving_event(self, event, next_vertex, delta_t):
+        from .MovingEvent import MovingEvent
+        return MovingEvent(
+            event.end_time,
+            event.end_time + delta_t,
+            event.agv,
+            event.graph,
+            event.agv.current_node,
+            next_vertex,
+        )
+
+    def _create_halting_event(self, event, next_vertex, delta_t):
+        from .HaltingEvent import HaltingEvent
         return HaltingEvent(
             event.end_time,
             event.graph.graph_processor.H,
@@ -167,6 +166,4 @@ class Node:
             next_vertex,
             delta_t
         )
-    
-    def __repr__(self):
-        return f"Node(id={self.id}, label='{self.label}', agv='{self.agv}')"   
+   

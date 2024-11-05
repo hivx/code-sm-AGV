@@ -46,7 +46,6 @@ class GraphProcessor:
         self.end_ban = -1
         self._seed = 0
         self.num_max_agvs = 0
-
         
     @property
     def target_nodes(self):
@@ -109,13 +108,6 @@ class GraphProcessor:
     def find_node(self, _id):
         _id = int(_id)
         # Tìm kiếm đối tượng Node có ID tương ứng
-        """for node in self.ts_nodes:
-            if node.id == id:
-                return node
-        # Nếu không tìm thấy, tạo mới và thêm vào danh sách
-        new_node = Node(id)
-        self.ts_nodes.append(new_node)
-        return new_node"""
         if not hasattr(self, 'map_nodes'):
             # Nếu chưa tồn tại, chuyển self.ts_nodes thành self.map_nodes
             self.map_nodes = {node.id: node for node in self.ts_nodes}
@@ -277,13 +269,6 @@ class GraphProcessor:
                         self.check_and_add_nodes([ID, j])
                         #self.tsedges.append(HoldingEdge(self.find_node(ID), self.find_node(j), self.d, self.d))
                         temp = self.find_node(ID).create_edge(self.find_node(j), self.M, self.d, [ID, j, 0, 1, self.d])
-                    """elif edges_with_cost.get((u, v), (-1, -1))[1] != -1 and (ID // self.M + edges_with_cost.get((u, v), (-1, -1))[1] >= self.H - (1 if ID % self.M == 0 else 0)):
-                        [upper, c] = edges_with_cost[(u, v)]
-                        #c = abs(self.H 
-                        output_lines.append(f"a {ID} {j} 0 {upper} {self.H}")
-                        if(checking_list == None):
-                            self.ts_edges.append((ID, j, 0, upper, self.H))
-                            self.check_and_add_nodes([ID, j], True, "Timeout")"""
                     if temp is not None and checking_list is None:
                         self.tsedges.append(temp)
         if checking_list is None:
@@ -490,17 +475,9 @@ class GraphProcessor:
                 self.adj[edge[0], edge[1]] = 0
 
             # Xử lý các cung cấm
-            #for edge in self.space_edges:
-                #ID1, ID2 = int(edge[1]), int(edge[2])
-                #t1, u, v, t2 = ID1 // self.M, ID1 % self.M, ID2 % self.M, ID2 // self.M
-                #if (u in S and v in S):
-                    #if ((t1 <= end_ban and end_ban <= t2) or (t1 <= start_ban and start_ban <= t2) or (t1 <= start_ban and end_ban <= t2)):
-                        #R.add((ID1, ID2))
             assert len(self._edges) == len(self.tsedges), f"Thiếu cạnh ở đâu đó rồi {len(self.ts_edges)} != {len(self.ts_edges)}"
             self.ts_edges = [e for e in self._edges if [e[0], e[1]] not in [r[:2] for r in R]]
             self.tsedges = [e for e in self.tsedges if [e.start_node.id, e.end_node.id] not in [r[:2] for r in R]]
-            #assert (size1 == size2 + len(R)), f"Số lượng self.ts_edges phải bị thay đổi, nhưng size1 = {size1}, size2 = {size2} và {len(R)}"
-            #self.create_tsg_file()
             # Tạo các cung mới dựa trên các cung cấm
             if R:
                 a_s, a_t, a_sub_t = maxid, maxid + 1, maxid + 2
@@ -650,8 +627,7 @@ class GraphProcessor:
                             #pdb.set_trace()
                             C = self.H*self.H
                             new_edges.add((j, max_val, 0, 1, C))
-                            self.find_node(j).create_edge(target_node, self.M, self.d, [j, max_val, 0, 1, C])
-                            
+                            self.find_node(j).create_edge(target_node, self.M, self.d, [j, max_val, 0, 1, C])                
         
         except FileNotFoundError:
             pass
@@ -738,7 +714,6 @@ class GraphProcessor:
                   self.alpha = 1
                   self.beta =  1
                   self.add_time_windows_constraints()
-
 
               # Ghi dòng thông tin về bài toán và lịch trình vào đầu file TSG.txt
               with open('TSG.txt', 'r+') as tsg_file:
@@ -946,8 +921,6 @@ class GraphProcessor:
             if 1 < number < M:
                 return number
 
-
-
     def use_in_main(self, use_config_data = False, print_output = False):
         self.print_out = print_output
         if(use_config_data):
@@ -1016,14 +989,7 @@ class GraphProcessor:
                 config.ID = self.ID.copy()
                 config.earliness = self.earliness.copy()
                 config.tardiness = self.tardiness.copy()
-            """self.num_max_agvs = 8
-            numOfAGVs = 8
-            self.started_nodes = [23, 4, 29, 30, 31, 32, 33, 35] 
-            self.ID = [2, 25, 8, 9, 10, 11, 12, 14] 
-            self.earliness = [2, 4, 8, 9, 10, 11, 12, 14] 
-            self.tardiness = [302, 304, 308, 309, 310, 311, 312, 314]
-            print(f'Start: {self.started_nodes} \n End: {self.ID} \n Earliness: {self.earliness} \n Tardiness: {self.tardiness}')"""
-        
+
         self.create_tsg_file()
         count = 0
         
