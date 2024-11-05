@@ -2,18 +2,50 @@
     "timeline": [
         {
             "agvIDs": [
-                23
+                29
             ],
-            "arcID": "Region_7",
-            "end_time": 78,
+            "arcID": "Region_17",
+            "end_time": 113,
             "start_time": 17
+        },
+        {
+            "agvIDs": [
+                30
+            ],
+            "arcID": "Region_10",
+            "end_time": 74,
+            "start_time": 17
+        },
+        {
+            "agvIDs": [
+                31
+            ],
+            "arcID": "Region_18",
+            "end_time": 119,
+            "start_time": 51
         },
         {
             "agvIDs": [
                 4
             ],
             "arcID": "Region_1",
-            "end_time": 116,
+            "end_time": 112,
+            "start_time": 17
+        },
+        {
+            "agvIDs": [
+                31
+            ],
+            "arcID": "Region_11",
+            "end_time": 92,
+            "start_time": 0
+        },
+        {
+            "agvIDs": [
+                23
+            ],
+            "arcID": "Region_7",
+            "end_time": 74,
             "start_time": 17
         }
     ]

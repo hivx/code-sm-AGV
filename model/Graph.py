@@ -40,65 +40,102 @@ class Graph:
         self.continue_debugging = True
         self.history = []
     def getReal(self, start_id, next_id, agv):
-        result = -1
         from .TimeWindowNode import TimeWindowNode
         M = self.number_of_nodes_in_space_graph
-        if(agv is not None):
-            old_real_path = [(node % M + (M if node % M == 0 else 0)) for node in agv.path]
-            real_start_id = start_id % M + (M if start_id % M == 0 else 0)
-            for real_node in old_real_path:
-                if(real_start_id == real_node):
-                    #pdb.set_trace()
-                    break
-            agv.path.add(start_id)
+        result = -1
+        
+        real_start_id, old_real_path = self._get_real_start_id_and_path(start_id, agv, M)
+        start_time, end_time = self._calculate_times(start_id, next_id, M)
+        space_start_node, space_end_node = self._get_space_nodes(start_id, next_id, M)
+        
+        min_moving_time = self._get_min_moving_time(space_start_node, space_end_node)
+        end_time = max(end_time, start_time + min_moving_time)
+
+        if self._is_target_node(next_id):
+            result = 0
+            self._update_agv_path(agv, next_id)
+        
+        result = self._handle_special_cases(next_id, start_time, end_time, result)
+        
+        if config.sfm:
+            result = self._calculate_sfm_runtime(space_start_node, space_end_node, agv, start_time, result)
+        
+        result = self._calculate_final_result(result, start_time, end_time)
+        
+        return self._handle_collisions(result, next_id, agv, M)
+
+    def _get_real_start_id_and_path(self, start_id, agv, M):
+        if agv is None:
+            return start_id % M + (M if start_id % M == 0 else 0), []
+        old_real_path = [(node % M + (M if node % M == 0 else 0)) for node in agv.path]
+        real_start_id = start_id % M + (M if start_id % M == 0 else 0)
+        if real_start_id in old_real_path:
+            return real_start_id, old_real_path
+        agv.path.add(start_id)
+        return real_start_id, old_real_path
+
+    def _calculate_times(self, start_id, next_id, M):
         start_time = start_id // M - (1 if start_id % M == 0 else 0)
         end_time = next_id // M - (1 if next_id % M == 0 else 0)
+        return start_time, end_time
+
+    def _get_space_nodes(self, start_id, next_id, M):
         space_start_node = start_id % M + (M if start_id % M == 0 else 0)
         space_end_node = next_id % M + (M if next_id % M == 0 else 0)
-        edges_with_cost = { (int(edge[1]), int(edge[2])): [int(edge[4]), int(edge[5])] for edge in self.graph_processor.space_edges \
-            if edge[3] == '0' and int(edge[4]) >= 1 }
-        min_moving_time = edges_with_cost.get((space_start_node, space_end_node), [-1, -1])[1]
-        end_time = max(end_time, start_time + min_moving_time)
+        return space_start_node, space_end_node
+
+    def _get_min_moving_time(self, space_start_node, space_end_node):
+        edges_with_cost = {
+            (int(edge[1]), int(edge[2])): [int(edge[4]), int(edge[5])]
+            for edge in self.graph_processor.space_edges
+            if edge[3] == '0' and int(edge[4]) >= 1
+        }
+        return edges_with_cost.get((space_start_node, space_end_node), [-1, -1])[1]
+
+    def _is_target_node(self, next_id):
         all_ids_of_target_nodes = [node.id for node in self.graph_processor.target_nodes]
-        if(next_id in all_ids_of_target_nodes):
-            #pdb.set_trace()
-            if(agv is not None):
-                agv.path.add(next_id)
-            result = 0
+        return next_id in all_ids_of_target_nodes
+
+    def _update_agv_path(self, agv, node_id):
+        if agv is not None:
+            agv.path.add(node_id)
+
+    def _handle_special_cases(self, next_id, start_time, end_time, result):
+        from .TimeWindowNode import TimeWindowNode
         try:
             if isinstance(self.nodes[next_id], TimeWindowNode):
-                #pdb.set_trace()
-                result = (end_time - start_time) if result == -1 else result
-        except:
-            if next_id not in self.nodes:
-                #print(f'in self.nodes doesnt have {next_id}')
-                for e in self.graph_processor.ts_edges:
-                    if(e[0] % M == start_id % M and e[1] % M == next_id % M):
-                        #pdb.set_trace()
-                        result = e[4] if result == -1 else result
-                #pdb.set_trace()
-                result = abs(end_time - start_time) if result == -1 else result
-        
-        if config.sfm == True:
-            #print(f"Using sfm for AGV {agv.id} from {start_id} to {next_id} at time {start_time}.")
-            result = self.getAGVRuntime(config.filepath, config.functions_file, space_start_node, space_end_node, agv, start_time)
-            if result != -1:
-                print(f"AGV {agv.id} from {space_start_node} to {space_end_node} at time {start_time} has runtime {result}.")
-                return result
-        result = (3 if (end_time - start_time <= 3) else 2*(end_time - start_time) - 3) if result == -1 else result
+                return end_time - start_time if result == -1 else result
+        except KeyError:
+            for e in self.graph_processor.ts_edges:
+                if e[0] % self.number_of_nodes_in_space_graph == start_id % self.number_of_nodes_in_space_graph:
+                    result = e[4] if result == -1 else result
+            return abs(end_time - start_time) if result == -1 else result
+        return result
+
+    def _calculate_sfm_runtime(self, space_start_node, space_end_node, agv, start_time, result):
+        runtime = self.getAGVRuntime(config.filepath, config.functions_file, space_start_node, space_end_node, agv, start_time)
+        if runtime != -1:
+            print(f"{bcolors.OKGREEN}{agv.id} from {space_start_node} to {space_end_node} at time {start_time} has runtime {runtime}.{bcolors.ENDC}")
+            return runtime
+        return result
+
+    def _calculate_final_result(self, result, start_time, end_time):
+        if result == -1:
+            return 3 if (end_time - start_time <= 3) else 2 * (end_time - start_time) - 3
+        return result
+
+    def _handle_collisions(self, result, next_id, agv, M):
+        all_ids_of_target_nodes = [node.id for node in self.graph_processor.target_nodes]
         collision = True
-        #pdb.set_trace()
-        while(collision):
+        while collision:
             collision = False
-            if (next_id not in all_ids_of_target_nodes):
-                if(next_id in self.nodes.keys()):
-                    if(self.nodes[next_id].agv is not None):
-                        if(self.nodes[next_id].agv != agv):
-                            print(f'{self.nodes[next_id].agv.id} != {agv.id}')
-                            #pdb.set_trace()
-                            collision = True
-                            result = result + 1
-                            next_id = next_id + M
+            if next_id not in all_ids_of_target_nodes and next_id in self.nodes:
+                node = self.nodes[next_id]
+                if node.agv and node.agv != agv:
+                    print(f'{node.agv.id} != {agv.id}')
+                    collision = True
+                    result += 1
+                    next_id += M
         return result
         
     def getReal_preprocess(self, Map_file, function_file):
@@ -131,54 +168,50 @@ class Graph:
 
     def getAGVRuntime(self, Map_file, function_file, start_id, next_id, agv, current_time):
         hallways_list, functions_list = self.getReal_preprocess(Map_file, function_file)
-        events_list = []  # actually only has one event but because of the structure of the code, it has to be a list
-        # get the agv id from the agv object id: AGV1 -> 1
-        agv_id = int(agv.id[3:])
-        # get the direction of the agv by querying the hallways_list with the start_id and next_id
-        direction = 0
-        for hallway in hallways_list:
-            if hallway["src"] == start_id and hallway["dest"] == next_id:
-                direction = 1
-                hallway_id = hallway["hallway_id"]
-                break
-            elif hallway["src"] == next_id and hallway["dest"] == start_id:
-                direction = 0
-                hallway_id = hallway["hallway_id"]
-                break
-            else:
-                hallway_id = None
-
-        time_stamp = current_time
-
-        # if hallway_id is not found, return -1
+        agv_id = self._extract_agv_id(agv)
+        direction, hallway_id = self._get_hallway_direction(hallways_list, start_id, next_id)
+        
         if hallway_id is None:
-            # just pass this entire function
             print(f"{bcolors.WARNING}Hallway not found!{bcolors.ENDC}")
             return -1
 
-        # add to json
+        events_list = self._create_event_list(agv_id, direction, current_time, hallway_id)
+        hallways_list = self._filter_hallways_list(hallways_list, hallway_id, direction)
+        
+        return self._simulate_bulk_runtime(agv_id, hallway_id, hallways_list, functions_list, events_list)
+
+    def _extract_agv_id(self, agv):
+        return int(agv.id[3:])
+
+    def _get_hallway_direction(self, hallways_list, start_id, next_id):
+        for hallway in hallways_list:
+            if hallway["src"] == start_id and hallway["dest"] == next_id:
+                return 1, hallway["hallway_id"]
+            elif hallway["src"] == next_id and hallway["dest"] == start_id:
+                return 0, hallway["hallway_id"]
+        return 0, None
+
+    def _create_event_list(self, agv_id, direction, time_stamp, hallway_id):
         event = {
             "AgvIDs": [agv_id],
             "AgvDirections": [direction],
             "time_stamp": int(time_stamp),
             "hallway_id": hallway_id
         }
-        events_list.append(event)
+        return [event]
 
-        # filter the hallways_list to only have the hallway that the agv is currently in
-        hallways_list = [hallway for hallway in hallways_list if event["hallway_id"] == hallway_id and (hallway["src"] - hallway["dest"]) * direction > 0]
+    def _filter_hallways_list(self, hallways_list, hallway_id, direction):
+        return [
+            hallway for hallway in hallways_list
+            if hallway["hallway_id"] == hallway_id and (hallway["src"] - hallway["dest"]) * direction > 0
+        ]
 
+    def _simulate_bulk_runtime(self, agv_id, hallway_id, hallways_list, functions_list, events_list):
         bulk_sim = BulkHallwaySimulator("test", 3600, hallways_list, functions_list, events_list)
         result = bulk_sim.run_simulation()
-        # result will look like this: {0: {'hallway_1': {'time_stamp': 0, 'completion_time': 111}}, 1: {'hallway_1': {'time_stamp': 0, 'completion_time': 111}}}
-        # get the completion_time from the result
         completion_time = result[agv_id][hallway_id]["completion_time"]
-        # event_history["completion_time"] = int(completion_time)
-        # self.history.append(event_history)
-        # write the history to a file
-
-        print(f"{bcolors.OKGREEN}AGV {agv_id} from {start_id} to {next_id} at time {current_time} has runtime {completion_time}.{bcolors.ENDC}")
-        return completion_time # int
+        print(f"{bcolors.OKGREEN}AGV {agv_id} has runtime {completion_time} in hallway {hallway_id}.{bcolors.ENDC}")
+        return completion_time
 #=======================================================================================================
 
     def count_edges(self):
@@ -313,10 +346,6 @@ class Graph:
                         need_to_remove_first_cur = True
                         if(start == end and number != self.cur[0].id and end_time - start_time == self.graph_processor.d):
                             need_to_remove_first_cur = False
-                        #if(isinstance(self.cur[0], TimeWindowNode) or len(self.cur) == 1):
-                        #    pdb.set_trace()
-                        #pdb.set_trace()
-                        #indices_dict = {source_id: [index for index, e in enumerate(edges) if e[0].id == end]\
                         if need_to_remove_first_cur:
                             found = False
                             for source_id, edges in self.graph_processor.time_window_controller.TWEdges.items():
@@ -434,118 +463,126 @@ class Graph:
                     path.append((node, neighbor, weight))
         return path
     
-    def update_graph(self, id1 = -1, id2 = -1, end_id = -1, agv_id = None):
-    #ý nghĩa của các tham số: id1 - id của nút nguồn X trong đồ thị TSG
-    #                         id2 - id cuả nút đích dự kiến Y trong đồ thị TSG
-    #                         c12 - thời gian thực tế mà AGV di chuyển từ nút X đến Y
-        # Update the graph with new edge information
-        #self.add_edge(currentpos, nextpos, realtime)
+    def update_graph(self, id1=-1, id2=-1, end_id=-1, agv_id=None):
+        """Cập nhật đồ thị với thông tin cạnh mới."""
+        ID1, ID2, endid = self.get_ids(id1, id2, end_id)
+        M = self.number_of_nodes_in_space_graph
+        current_time, new_node_id = self.calculate_times(ID1, ID2, endid, M)
+
+        self.process_adjacency_list(current_time, new_node_id, M)
+        
+        q = self.update_new_started_nodes(new_node_id)
+        new_edges = self.graph_processor.insert_from_queue(q, self.adjacency_list)
+        self.process_new_edges(new_edges)
+
+        if self.version_check(current_time):
+            self.version += 1
+
+        new_halting_edges = self.collect_new_halting_edges()
+        self.write_to_file([agv_id, new_node_id], new_halting_edges)
+
+    def get_ids(self, id1, id2, end_id):
+        """Nhận ID từ người dùng hoặc sử dụng giá trị mặc định."""
         ID1 = int(input("Nhap ID1: ")) if id1 == -1 else id1
         ID2 = int(input("Nhap ID2: ")) if id2 == -1 else id2
         endid = int(input("Nhap ID thực sự khi AGV kết thúc hành trình: ")) if end_id == -1 else end_id
-        M = self.number_of_nodes_in_space_graph
-        _, time2 = ID1 // M - (1 if ID1 % M == 0 else 0), ID2 // M - (1 if ID2 % M == 0 else 0)
-        current_time = endid // M - (1 if endid % M == 0 else 0)
-        if(current_time >= self.graph_processor.H):
-            pdb.set_trace()
-        new_node_id = current_time*M + (M if ID2 % M == 0 else ID2 % M)
+        return ID1, ID2, endid
 
-        # Duyệt qua từng phần tử của adjacency_list
+    def calculate_times(self, ID1, ID2, endid, M):
+        """Tính thời gian và ID nút mới."""
+        time2 = ID1 // M - (1 if ID1 % M == 0 else 0)
+        current_time = endid // M - (1 if endid % M == 0 else 0)
+        new_node_id = current_time * M + (M if ID2 % M == 0 else ID2 % M)
+        return current_time, new_node_id
+
+    def process_adjacency_list(self, current_time, new_node_id, M):
+        """Duyệt qua từng phần tử của adjacency_list và cập nhật thông tin."""
         for source_id, edges in list(self.adjacency_list.items()):
-            #if(source_id == 51265):
-            #    #pdb.set_trace()
-            #    pass
-            isContinued = False
-            for node in self.graph_processor.target_nodes:
-                if node.id == source_id:
-                    isContinued = True
-                    break
+            isContinued = any(node.id == source_id for node in self.graph_processor.target_nodes)
             if isContinued:
                 continue
-            # Tính giá trị time
-            if (source_id in self.nodes):
+
+            if source_id in self.nodes:
                 node = self.nodes[source_id]
                 time = source_id // M - (1 if source_id % M == 0 else 0)
-                # Nếu time < current_time, not isinstance(node, (TimeWindowNode, RestrictionNode))
                 if time < current_time and not isinstance(node, (TimeWindowNode, RestrictionNode)):
-                    #if(source_id == 18):
-                    # #    pdb.set_trace()allAGVs
-                    del self.adjacency_list[source_id]
-                    if(self.nodes[source_id].agv is not None):
-                        #pdb.set_trace()
-                        space_id = M if (source_id % M == 0) else source_id % M
-                        new_source_id = current_time*M + space_id
-                        try:
-                            if new_source_id in self.nodes:
-                                self.nodes[new_source_id].agv = self.nodes[source_id].agv
-                            index = self.graph_processor.started_nodes.index(source_id)  # Tìm vị trí của phần tử x
-                            self.graph_processor.started_nodes[index] = new_source_id  # Thay thế phần tử x bằng phần tử y
-                        except ValueError:
-                            #print(f"Phần tử {source_id} không tồn tại trong danh sách.")
-                            pass
-                        #pdb.set_trace()
-                    del self.nodes[source_id]
-        
-        q = deque()
-        q.append(new_node_id)
+                    self.update_nodes(source_id, current_time, M)
+
+    def update_nodes(self, source_id, current_time, M):
+        """Cập nhật thông tin nút và xóa khỏi danh sách."""
+        del self.adjacency_list[source_id]
+        if self.nodes[source_id].agv is not None:
+            space_id = M if (source_id % M == 0) else source_id % M
+            new_source_id = current_time * M + space_id
+            self.transfer_agv(source_id, new_source_id)
+        del self.nodes[source_id]
+
+    def transfer_agv(self, source_id, new_source_id):
+        """Chuyển AGV từ nút cũ sang nút mới."""
+        try:
+            if new_source_id in self.nodes:
+                self.nodes[new_source_id].agv = self.nodes[source_id].agv
+            index = self.graph_processor.started_nodes.index(source_id)
+            self.graph_processor.started_nodes[index] = new_source_id
+        except ValueError:
+            pass
+
+    def update_new_started_nodes(self, new_node_id):
+        """Cập nhật danh sách các nút mới bắt đầu và trả về hàng đợi."""
+        q = deque([new_node_id])
         new_started_nodes = self.getAllNewStartedNodes()
         for start in new_started_nodes:
-            if(start != new_node_id):
+            if start != new_node_id:
                 q.append(start)
-        new_edges = self.graph_processor.insert_from_queue(q, self.adjacency_list)
+        return q
+
+    def process_new_edges(self, new_edges):
+        """Xử lý và cập nhật các cạnh mới vào đồ thị."""
         for edge in new_edges:
             arr = self.parse_string(edge)
-            source_id = arr[0]
-            dest_id = arr[1]
-            if source_id not in self.nodes:
-                self.nodes[source_id] = self.graph_processor.find_node(source_id)
-            if dest_id not in self.nodes:
-                self.nodes[dest_id] = self.graph_processor.find_node(dest_id)
-            if source_id not in self.adjacency_list:
-                self.adjacency_list[source_id] = []
-            found = False
-            for end_id, e in self.adjacency_list[source_id]:
-                if(end_id == dest_id):
-                    found = True
-                    break
-            if(not found):
-                anEdge = self.nodes[source_id].create_edge(self.nodes[dest_id], \
-                        self.graph_processor.M, self.graph_processor.d, [source_id, \
-                        dest_id, arr[2], arr[3], arr[4]])
-                self.adjacency_list[source_id].append([dest_id, anEdge])
-            
-            #add TimeWindowEdge
-            self.graph_processor.time_window_controller.generate_time_window_edges(\
-                self.nodes[source_id], self.adjacency_list, self.number_of_nodes_in_space_graph)
-            
-            self.graph_processor.restriction_controller.generate_restriction_edges(\
-                self.nodes[source_id], self.nodes[dest_id], self.nodes, self.adjacency_list)
-        if(time2 != current_time):
-            #Kể cả không có thêm cạnh mới
-            #thì việc đến điểm lệch đi so với dự đoán cũng có thể đồ thị phải cập nhật rồi
-            #pdb.set_trace()
-            self.version = self.version + 1
+            source_id, dest_id = arr[0], arr[1]
+            self.add_edge_to_graph(source_id, dest_id, arr)
+
+    def add_edge_to_graph(self, source_id, dest_id, arr):
+        """Thêm một cạnh mới vào đồ thị."""
+        if source_id not in self.nodes:
+            self.nodes[source_id] = self.graph_processor.find_node(source_id)
+        if dest_id not in self.nodes:
+            self.nodes[dest_id] = self.graph_processor.find_node(dest_id)
+
+        if source_id not in self.adjacency_list:
+            self.adjacency_list[source_id] = []
+        
+        found = any(end_id == dest_id for end_id, _ in self.adjacency_list[source_id])
+        if not found:
+            anEdge = self.nodes[source_id].create_edge(self.nodes[dest_id], self.graph_processor.M, self.graph_processor.d, [source_id, dest_id, arr[2], arr[3], arr[4]])
+            self.adjacency_list[source_id].append([dest_id, anEdge])
+        
+        # Add TimeWindowEdge and RestrictionEdge
+        self.graph_processor.time_window_controller.generate_time_window_edges(self.nodes[source_id], self.adjacency_list, self.number_of_nodes_in_space_graph)
+        self.graph_processor.restriction_controller.generate_restriction_edges(self.nodes[source_id], self.nodes[dest_id], self.nodes, self.adjacency_list)
+
+    def version_check(self, current_time):
+        """Kiểm tra nếu phiên bản cần được cập nhật."""
+        time2 = self.number_of_nodes_in_space_graph // self.graph_processor.M - (1 if self.number_of_nodes_in_space_graph % self.graph_processor.M == 0 else 0)
+        return time2 != current_time
+
+    def collect_new_halting_edges(self):
+        """Thu thập các cạnh dừng mới cần được thêm vào."""
         sorted_edges = sorted(self.adjacency_list.items(), key=lambda x: x[0])
         new_nodes = set()
         new_halting_edges = []
+
         for source_id, edges in sorted_edges:
             for edge in edges:
                 t = edge[0] // self.graph_processor.M - (1 if edge[0] % self.graph_processor.M == 0 else 0)
-                if(t >= self.graph_processor.H and edge[0] not in new_nodes and isinstance(self.nodes[edge[0]], TimeoutNode)):
+                if t >= self.graph_processor.H and edge[0] not in new_nodes and isinstance(self.nodes[edge[0]], TimeoutNode):
                     new_nodes.add(edge[0])
-                    L = len(self.graph_processor.get_targets())
-                    if(L == 0):
-                        pdb.set_trace()
-                        targets = self.graph_processor.get_targets()
                     for target in self.graph_processor.get_targets():
                         dest_id = target.id
-                        """anEdge = self.nodes[edge[0]].create_edge(self.nodes[dest_id], \
-                            self.graph_processor.M, self.graph_processor.d, [edge[0], \
-                                dest_id, 0, 1, self.H*self.H])
-                        self.adjacency_list[edge[0]].append([dest_id, anEdge])"""
-                        new_halting_edges.append([edge[0], dest_id, 0, 1, self.graph_processor.H*self.graph_processor.H])
+                        new_halting_edges.append([edge[0], dest_id, 0, 1, self.graph_processor.H * self.graph_processor.H])
 
-        self.write_to_file([agv_id, new_node_id], new_halting_edges)
+        return new_halting_edges
 
     def reset_agv(self, real_node_id, agv):
         for node_id in self.nodes.keys():
