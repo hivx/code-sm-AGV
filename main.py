@@ -108,7 +108,6 @@ while(config.count < 2):
         config.haltingAGVs = 0
         config.totalSolving = 0
         config.timeSolving = 0
-        from model.AGV import AGV
         AGV.reset()
         simulator.reset()
     

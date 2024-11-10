@@ -16,10 +16,9 @@ from scipy.sparse import lil_matrix
 import numpy as np
 import pdb
 import config
-"""
-Mô tả yêu cầu của code:
-https://docs.google.com/document/d/13S_Ycg-aB4GjEm8xe6tAoUHzhS-Z1iFnM4jX_bWFddo/edit?usp=sharing
-"""
+
+""" Mô tả yêu cầu của code:
+https://docs.google.com/document/d/13S_Ycg-aB4GjEm8xe6tAoUHzhS-Z1iFnM4jX_bWFddo/edit?usp=sharing """
 
 class GraphProcessor:
     def __init__(self):
@@ -73,7 +72,6 @@ class GraphProcessor:
         return None
     
     def getReal(self, start_id, next_id, agv):
-        from controller.NodeGenerator import TimeWindowNode
         M = self.number_of_nodes_in_space_graph
         result = -1
         

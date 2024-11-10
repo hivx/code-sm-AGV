@@ -76,8 +76,6 @@ class HaltingEvent(Event):
     def __str__(self):
         return f"HaltingEvent for {self.agv.id} because it leaves {self.start_node} at {self.start_time} and its finished time at {self.end_time}"
 
-from model.Event import Event
-import pdb
 class HoldingEvent(Event):
     def __init__(self, start_time, end_time, agv, graph, duration):
         
@@ -107,10 +105,7 @@ class HoldingEvent(Event):
     def __str__(self):
         return f"HoldingEvent for {self.agv.id} at {self.agv.current_node} in {self.duration}(s)"
 
-from model.Event import Event
 from controller.EventGenerator import HaltingEvent
-import inspect
-import pdb
 from discrevpy import simulator
 from datetime import datetime
 
@@ -211,9 +206,6 @@ class MovingEvent(Event):
         new_event = next_node.goToNextNode(self)
         simulator.schedule(new_event.end_time, new_event.process)
 
-from model.Event import Event
-import pdb
-import config
 from model.AGV import AGV
 class ReachingTargetEvent(Event):
     def __init__(self, start_time, end_time, agv, graph, target_node):
@@ -339,8 +331,6 @@ class ReachingTargetEvent(Event):
     def __str__(self):
         return f"ReachingTargetEvent for {self.agv.id} at time: {self.end_time} and it reaches the artificial node {self.target_node}"
 
-from model.Event import Event
-
 class RestrictionEvent(Event):
     def __init__(self, start_time, end_time, agv, graph, start_node, end_node):
         super().__init__(start_time, end_time, agv, graph)
@@ -379,7 +369,6 @@ class RestrictionEvent(Event):
         self.updateGraph()
         self.calculateCost()
 
-from model.Event import Event
 class TimeWindowsEvent(Event):
     def __init__(self, start_time, end_time, agv, graph, target_node):
         super().__init__(start_time, end_time, agv, graph)
@@ -409,10 +398,6 @@ class TimeWindowsEvent(Event):
             f"AGV {self.agv.id} processes TimeWindowsEvent at {self.target_node} at time {self.end_time}"
         )
         self.getNext()
-        
-from model.Event import Event
-from discrevpy import simulator
-import pdb
     
 class StartEvent(Event):
     def __init__(self, start_time, end_time, agv, graph):

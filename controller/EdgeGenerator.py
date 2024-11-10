@@ -14,8 +14,6 @@ class RestrictionEdge(Edge):
     def __repr__(self):
         return f"RestrictionEdge({self.start_node}, {self.end_node}, weight={self.weight}, restrictions={self.label})"
 
-from model.Edge import Edge
-
 class TimeWindowEdge(Edge):
     def __init__(self, start_node, end_node, weight, label):
         super().__init__(start_node, end_node, 0, 1, weight)

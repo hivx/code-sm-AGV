@@ -40,7 +40,6 @@ class Graph:
         self.continue_debugging = True
         self.history = []
     def getReal(self, start_id, next_id, agv):
-        from controller.NodeGenerator import TimeWindowNode
         M = self.number_of_nodes_in_space_graph
         result = -1
         
@@ -101,7 +100,6 @@ class Graph:
             agv.path.add(node_id)
 
     def _handle_special_cases(self, next_id, start_time, end_time, result):
-        from controller.NodeGenerator import TimeWindowNode
         try:
             if isinstance(self.nodes[next_id], TimeWindowNode):
                 return end_time - start_time if result == -1 else result
@@ -221,7 +219,6 @@ class Graph:
         return count
             
     def insertEdgesAndNodes(self, start, end, edge):
-        from model.Node import Node
         start_id = start if isinstance(start, int) else start.id
         end_id = end if isinstance(end, int) else end.id
         self.adjacency_list[start_id].append((end_id, edge))
@@ -657,7 +654,6 @@ class Graph:
                 file.write(f"a {edge[0]} {edge[1]} {edge[2]} {edge[3]} {edge[4]}\n")
 
     def remove_node_and_origins(self, node_id):
-        from model.Node import Node
         node = None
         if isinstance(node_id, Node):
             node = node_id

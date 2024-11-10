@@ -8,7 +8,6 @@ class ArtificialNode(Node):
     def __repr__(self):
         return f"ArtificialNode(id={self.id}, label='{self.label}', temporary={self.temporary})"
     
-from model.Node import Node
 from controller.EdgeGenerator import RestrictionEdge
 import pdb
 
@@ -25,8 +24,6 @@ class RestrictionNode(Node):
     def __repr__(self):
         return f"RestrictionNode(ID={self.id}, restrictions={self.restrictions})"
 
-from model.Node import Node
-
 class TimeoutNode(Node):
     def __init__(self, id, label=None, temporary=False):
         super().__init__(id, label)
@@ -34,8 +31,6 @@ class TimeoutNode(Node):
 
     def __repr__(self):
         return f"TimeoutNode(id={self.id}, label='{self.label}', temporary={self.temporary})"
-    
-from model.Node import Node
 
 class TimeWindowNode(Node):
     def __init__(self, ID, time_window):
