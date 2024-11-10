@@ -1,10 +1,6 @@
 import os
 import re
 import json
-from model.Edge import Edge
-from model.Edge import HoldingEdge
-from model.Edge import MovingEdge
-from model.Edge import ArtificialEdge
 from controller.NodeGenerator import TimeoutNode
 from controller.NodeGenerator import ArtificialNode
 from controller.NodeGenerator import TimeWindowNode
@@ -75,7 +71,7 @@ class GraphProcessor:
         M = self.number_of_nodes_in_space_graph
         result = -1
         
-        real_start_id, old_real_path = self._get_real_start_id_and_path(start_id, agv, M)
+        # real_start_id, old_real_path = self._get_real_start_id_and_path(start_id, agv, M)
         start_time, end_time = self._calculate_times(start_id, next_id, M)
         space_start_node, space_end_node = self._get_space_nodes(start_id, next_id, M)
         
@@ -575,7 +571,7 @@ class GraphProcessor:
         a_s, a_t, a_sub_t = maxid, maxid + 1, maxid + 2
         self.check_and_add_nodes([a_s, a_t, a_sub_t], True, "Restriction")
 
-        self.restriction_controller.add_nodes_and_ReNode(
+        self.restriction_controller.add_nodes_and__re_node(
             R[0][0], R[0][1], restriction, a_s, a_t
         )
 

@@ -29,7 +29,7 @@ class HaltingEvent(Event):
 
     def re_calculate(self, path):
         cost = 0
-        deltaCost = 0
+        delta_cost = 0
         prev = 0
         M = self.graph.number_of_nodes_in_space_graph 
         D = self.graph.graph_processor.d
@@ -40,18 +40,18 @@ class HaltingEvent(Event):
             #pdb.set_trace()
             t2 = node // M - (1 if node % M == 0 else 0)
             t1 = prev // M - (1 if prev % M == 0 else 0)
-            deltaCost = self.graph.graph_processor.alpha*(t2 - t1)
+            delta_cost = self.graph.graph_processor.alpha*(t2 - t1)
             if(i != P - 1):
                 #print('===', end='')
                 if(i > 0):
                     # print('===', end='')                                                            
-                    cost = cost + deltaCost
-                    print(f'({deltaCost})===', end='')
+                    cost = cost + delta_cost
+                    print(f'({delta_cost})===', end='')
                 print(f'{real_node}===', end='')
             else:
-                deltaCost = (float('inf') if(self.end_node != self.agv.target_node.id) else self.end_time - self.start_time)
-                cost = cost + deltaCost
-                print(f'({self.delta_t})/({deltaCost})==={real_node}===END. ', end='')
+                delta_cost = (float('inf') if(self.end_node != self.agv.target_node.id) else self.end_time - self.start_time)
+                cost = cost + delta_cost
+                print(f'({self.delta_t})/({delta_cost})==={real_node}===END. ', end='')
             prev = path[i]
         print(f'Total cost: {cost}. The AGV reaches its destination at {self.end_time}')
     
@@ -97,8 +97,8 @@ class HoldingEvent(Event):
             pass
 
     def process(self):
-        added_cost = self.calculateCost()
-        next_node = self.agv.get_next_node()
+        # added_cost = self.calculateCost()
+        # next_node = self.agv.get_next_node()
         self.updateGraph()  # Optional, if there's a need to update the graph based on this event
         self.getNext()
         
@@ -282,7 +282,7 @@ class ReachingTargetEvent(Event):
 
     def re_calculate(self, path):
         cost = 0
-        deltaCost = 0
+        delta_cost = 0
         prev = 0
         M = self.graph.number_of_nodes_in_space_graph 
         D = self.graph.graph_processor.d
@@ -293,19 +293,19 @@ class ReachingTargetEvent(Event):
             #pdb.set_trace()
             t2 = node // M - (1 if node % M == 0 else 0)
             t1 = prev // M - (1 if prev % M == 0 else 0)
-            deltaCost = self.graph.graph_processor.alpha*(t2 - t1)
+            delta_cost = self.graph.graph_processor.alpha*(t2 - t1)
             if(i != P - 1):
                 #print('===', end='')
                 if(i > 0):
                     # print('===', end='')                                                            
-                    cost = cost + deltaCost
-                    print(f'({deltaCost})===', end='')
+                    cost = cost + delta_cost
+                    print(f'({delta_cost})===', end='')
                 print(f'{real_node}===', end='')
             else:
-                cost = cost + self.last_cost #+ deltaCost
-                deltaCost = self.last_cost #+ deltaCost
-                #print(f'({deltaCost})==={real_node}/{node}===END. ', end='')
-                print(f'({deltaCost})==={node}===END. ', end='')
+                cost = cost + self.last_cost #+ delta_cost
+                delta_cost = self.last_cost #+ delta_cost
+                #print(f'({delta_cost})==={real_node}/{node}===END. ', end='')
+                print(f'({delta_cost})==={node}===END. ', end='')
             prev = path[i]
         dest = path[-2]
         real_dest = M if dest % M == 0 else dest % M
