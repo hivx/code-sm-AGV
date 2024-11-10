@@ -21,8 +21,8 @@ class Node:
     def create_edge(self, node, M, d, e, debug = False):
         if(debug):
             pdb.set_trace()
-        from .RestrictionNode import RestrictionNode
-        from .TimeWindowNode import TimeWindowNode
+        from controller.NodeGenerator import RestrictionNode
+        from controller.NodeGenerator import TimeWindowNode
         from .Edge import HoldingEdge
         from .RestrictionEdge import RestrictionEdge
         from .TimeWindowEdge import TimeWindowEdge 

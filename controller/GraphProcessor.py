@@ -5,10 +5,10 @@ from model.Edge import Edge
 from model.Edge import HoldingEdge
 from model.Edge import MovingEdge
 from model.Edge import ArtificialEdge
-from model.TimeoutNode import TimeoutNode
-from model.ArtificialNode import ArtificialNode
-from model.TimeWindowNode import TimeWindowNode
-from model.RestrictionNode import RestrictionNode
+from controller.NodeGenerator import TimeoutNode
+from controller.NodeGenerator import ArtificialNode
+from controller.NodeGenerator import TimeWindowNode
+from controller.NodeGenerator import RestrictionNode
 from model.RestrictionController import RestrictionController
 from model.Node import Node
 from collections import deque
@@ -73,7 +73,7 @@ class GraphProcessor:
         return None
     
     def getReal(self, start_id, next_id, agv):
-        from .TimeWindowNode import TimeWindowNode
+        from controller.NodeGenerator import TimeWindowNode
         M = self.number_of_nodes_in_space_graph
         result = -1
         

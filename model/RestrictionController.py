@@ -3,8 +3,8 @@ import pdb
 from collections import deque, defaultdict
 from .utility import utility
 import inspect
-from .RestrictionNode import RestrictionNode
-from .TimeWindowNode import TimeWindowNode
+from controller.NodeGenerator import RestrictionNode
+from controller.NodeGenerator import TimeWindowNode
 from .Node import Node
 
 class RestrictionController:

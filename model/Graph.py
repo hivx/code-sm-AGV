@@ -3,9 +3,9 @@ import pdb
 from collections import deque, defaultdict
 from .utility import utility
 import inspect
-from .RestrictionNode import RestrictionNode
-from .TimeWindowNode import TimeWindowNode
-from .TimeoutNode import TimeoutNode
+from controller.NodeGenerator import RestrictionNode
+from controller.NodeGenerator import TimeWindowNode
+from controller.NodeGenerator import TimeoutNode
 from .Node import Node
 import config
 from .hallway_simulator_module.HallwaySimulator import BulkHallwaySimulator
@@ -40,7 +40,7 @@ class Graph:
         self.continue_debugging = True
         self.history = []
     def getReal(self, start_id, next_id, agv):
-        from .TimeWindowNode import TimeWindowNode
+        from controller.NodeGenerator import TimeWindowNode
         M = self.number_of_nodes_in_space_graph
         result = -1
         
@@ -101,7 +101,7 @@ class Graph:
             agv.path.add(node_id)
 
     def _handle_special_cases(self, next_id, start_time, end_time, result):
-        from .TimeWindowNode import TimeWindowNode
+        from controller.NodeGenerator import TimeWindowNode
         try:
             if isinstance(self.nodes[next_id], TimeWindowNode):
                 return end_time - start_time if result == -1 else result

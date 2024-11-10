@@ -3,7 +3,7 @@ import pdb
 from collections import deque, defaultdict
 from .utility import utility
 import inspect
-from .TimeWindowNode import TimeWindowNode
+from controller.NodeGenerator import TimeWindowNode
 from .TimeWindowEdge import TimeWindowEdge
 from .Node import Node
 

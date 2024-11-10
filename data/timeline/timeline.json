@@ -5,7 +5,7 @@
                 23
             ],
             "arcID": "Region_7",
-            "end_time": 76,
+            "end_time": 75,
             "start_time": 17
         },
         {
@@ -14,22 +14,6 @@
             ],
             "arcID": "Region_1",
             "end_time": 119,
-            "start_time": 17
-        },
-        {
-            "agvIDs": [
-                29
-            ],
-            "arcID": "Region_17",
-            "end_time": 112,
-            "start_time": 17
-        },
-        {
-            "agvIDs": [
-                30
-            ],
-            "arcID": "Region_10",
-            "end_time": 82,
             "start_time": 17
         }
     ]

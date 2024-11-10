@@ -3,8 +3,8 @@ from model.AGV import AGV
 from model.Event import Event, debug
 from controller.EventGenerator import StartEvent
 from model.Graph import Graph
-from model.TimeWindowNode import TimeWindowNode
-from model.RestrictionNode import RestrictionNode 
+from controller.NodeGenerator import TimeWindowNode
+from controller.NodeGenerator import RestrictionNode 
 from model.TimeWindowEdge import TimeWindowEdge
 from model.RestrictionEdge import RestrictionEdge
 import config
