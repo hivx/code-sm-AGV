@@ -23,10 +23,10 @@ class Node:
             pdb.set_trace()
         from controller.NodeGenerator import RestrictionNode
         from controller.NodeGenerator import TimeWindowNode
-        from .Edge import HoldingEdge
-        from .RestrictionEdge import RestrictionEdge
-        from .TimeWindowEdge import TimeWindowEdge 
-        from .Edge import MovingEdge
+        from model.Edge import HoldingEdge
+        from controller.EdgeGenerator import RestrictionEdge
+        from controller.EdgeGenerator import TimeWindowEdge 
+        from model.Edge import MovingEdge
         if(isinstance(node, int)):
             pdb.set_trace()
         if node.id % M == self.id % M and \

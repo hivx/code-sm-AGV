@@ -9,7 +9,7 @@ class ArtificialNode(Node):
         return f"ArtificialNode(id={self.id}, label='{self.label}', temporary={self.temporary})"
     
 from model.Node import Node
-from model.RestrictionEdge import RestrictionEdge
+from controller.EdgeGenerator import RestrictionEdge
 import pdb
 
 class RestrictionNode(Node):

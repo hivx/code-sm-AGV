@@ -5,8 +5,8 @@ from controller.EventGenerator import StartEvent
 from model.Graph import Graph
 from controller.NodeGenerator import TimeWindowNode
 from controller.NodeGenerator import RestrictionNode 
-from model.TimeWindowEdge import TimeWindowEdge
-from model.RestrictionEdge import RestrictionEdge
+from controller.EdgeGenerator import TimeWindowEdge
+from controller.EdgeGenerator import RestrictionEdge
 import config
 from controller.GraphProcessor import GraphProcessor
 import subprocess

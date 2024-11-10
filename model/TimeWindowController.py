@@ -4,7 +4,7 @@ from collections import deque, defaultdict
 from .utility import utility
 import inspect
 from controller.NodeGenerator import TimeWindowNode
-from .TimeWindowEdge import TimeWindowEdge
+from controller.EdgeGenerator import TimeWindowEdge
 from .Node import Node
 
 class TimeWindowController:
