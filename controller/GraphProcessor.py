@@ -9,7 +9,7 @@ from controller.NodeGenerator import TimeoutNode
 from controller.NodeGenerator import ArtificialNode
 from controller.NodeGenerator import TimeWindowNode
 from controller.NodeGenerator import RestrictionNode
-from model.RestrictionController import RestrictionController
+from controller.RestrictionController import RestrictionController
 from model.Node import Node
 from collections import deque
 from scipy.sparse import lil_matrix
@@ -675,7 +675,7 @@ class GraphProcessor:
                     return np.concatenate((first_two, numbers))
     
     def add_time_windows_constraints(self):
-        from model.TimeWindowController import TimeWindowController
+        from controller.TimeWindowController import TimeWindowController
 
         max_val = self.get_max_id() + 1
         target_node = self.create_time_window_node(max_val)

@@ -1,11 +1,11 @@
 import os
 import pdb
 from collections import deque, defaultdict
-from .utility import utility
+from model.utility import utility
 import inspect
 from controller.NodeGenerator import RestrictionNode
 from controller.NodeGenerator import TimeWindowNode
-from .Node import Node
+from model.Node import Node
 
 class RestrictionController:
     def __init__(self, graph_processor):

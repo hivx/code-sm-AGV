@@ -1,11 +1,11 @@
 import os
 import pdb
 from collections import deque, defaultdict
-from .utility import utility
+from model.utility import utility
 import inspect
 from controller.NodeGenerator import TimeWindowNode
 from controller.EdgeGenerator import TimeWindowEdge
-from .Node import Node
+from model.Node import Node
 
 class TimeWindowController:
     def __init__(self, alpha, beta, gamma, d, H):
