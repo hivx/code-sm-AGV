@@ -5,11 +5,6 @@ class RestrictionEdge(Edge):
     def __init__(self, start_node, end_node, edge, label):
         super().__init__(start_node, end_node, edge[2], edge[3], edge[4])
         self.label = label
-        """current_frame = inspect.currentframe()
-        # Lấy tên của hàm gọi my_function
-        caller_name = inspect.getframeinfo(current_frame.f_back).function
-        #if(self.graph.graph_processor.print_out):
-        print(f'RestrictionEdge.py:12 {caller_name}')"""
 
     def make_permanent(self):
         # This method could be used to convert a temporary edge into a permanent one

@@ -1,15 +1,15 @@
-from .utility import utility
-from .Graph import Graph
+from model.utility import utility
+from model.Graph import Graph
 import subprocess
 from discrevpy import simulator
-from .AGV import AGV
-from .Edge import Edge
+from model.AGV import AGV
+from model.Edge import Edge
 import pdb
 import os
 from collections import defaultdict
 import config
 from inspect import currentframe, getframeinfo
-from .NXSolution import NetworkXSolution
+from model.NXSolution import NetworkXSolution
 
 number_of_nodes_in_space_graph = 0
 debug = 0
@@ -92,28 +92,6 @@ class Event:
             self.find_path(DimacsFileReader, ForecastingModel)
 
     def getNext(self):
-        """global numOfCalling
-        numOfCalling = numOfCalling + 1
-        if(numOfCalling <= 5):
-            print(f'as {numOfCalling}: {self.agv.id} has been served.')
-        if(numOfCalling < 5 and self.agv.id == 'AGV10'):
-            print(f'{self.agv.id} has first trace: {self.agv.get_traces()[0]}')
-        would_break_point = False
-        if(numOfCalling == 4 or numOfCalling == 5):
-            #pdb.set_trace()
-            print(f'getNext {getframeinfo(currentframe()).filename.split("/")[-1]}:{getframeinfo(currentframe()).lineno}')
-            global allAGVs
-            for a in allAGVs:
-                print(f'\t{a.id}', end=' ')
-                if(len(a.get_traces()) == 0):
-                    print("Trace is empty")
-                else:
-                    for node in a.get_traces():
-                        if(node.id == 13899):
-                            would_break_point = True
-                            #pdb.set_trace()
-                        print(f'{node.id}', end= ' ')
-                    print()"""
         from controller.EventGenerator import HaltingEvent
         from controller.EventGenerator import MovingEvent
         from controller.EventGenerator import HoldingEvent

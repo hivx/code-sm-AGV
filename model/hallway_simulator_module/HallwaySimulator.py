@@ -357,69 +357,6 @@ class HallwaySimulator:
         self.time_stamp = 0
         self.event_type = 0
 
-# new class to perform bulk operations
-# input:
-"""
-{
-    "Scenario_ID": "scenario_id",
-    "Human_distribution_function": "y=a*x+b (x [from, to])",
-    "hallways": [
-        "hallway_id_0": {
-            height: 0,
-            width: 0,
-            agv_ids: [],
-            agv_directions: [],
-            human_type_distribution: [],
-            time_stamp: 0
-        },
-        "hallway_id_1": {
-            height: 0,
-            width: 0,
-            agv_ids: [],
-            agv_directions: [],
-            human_type_distribution: [],
-            time_stamp: 0
-        },
-        ...
-    ]
-}
-"""
-"""
-How this works:
-generate variables:
-json AGV_COMPLETION_LOGS = {
-    "AGV_ID": {
-        "hallway_id": {
-            "time_stamp": time_stamp,
-            "completion_time": completion_time
-        },
-        "hallway_id": {
-            "time_stamp": time_stamp,
-            "completion_time": completion_time
-        },
-        ...
-    }
-    "AGV_ID": {
-        "hallway_id": {
-            "time_stamp": time_stamp,
-            "completion_time": completion_time
-        },
-        "hallway_id": {
-            "time_stamp": time_stamp,
-            "completion_time": completion_time
-        },
-        ...
-    }
-}
-check time_stamp and sort the hallways based on time_stamp
-execute simulation in bulk for each time_stamp, log the completion time for each AGV
-for each time_stamp:
-    for each hallway in time_stamp:
-        execute simulation -> output: [(AGV ID, Time),...]
-        for each AGV in output:
-            AGV_COMPLETION_LOGS[AGV_ID][hallway_id] = {"time_stamp": time_stamp, "completion_time": completion_time}
-            
-"""
 class BulkHallwaySimulator:
     def __init__(self, scenario_id, MaxAgents, hallways_list, functions_list, events_list):
         self.scenario_id = scenario_id
@@ -432,10 +369,6 @@ class BulkHallwaySimulator:
 
 
     def read_function(self, function):
-        # y = a * x + b (from,to)
-        """
-        get a, b, from, to
-        """
         splitted = function.split(" ")
         a = splitted[2]
         b = splitted[6]
@@ -446,10 +379,6 @@ class BulkHallwaySimulator:
         return a, b, from_to
 
     def agent_calculator(self, agents_distribution, time_stamp):
-        # y = a * x + b (from,to)
-        """
-        get a, b, from, to
-        """
         selected_function = ""
         for function in self.functions_list:
             _, _, from_to = self.read_function(function)
@@ -467,48 +396,6 @@ class BulkHallwaySimulator:
 
 
     def init2json(self):
-        """
-        input:
-        MaxAgents: int
-        hallways_list: list of json object:
-            [
-                {
-                    "hallway_id": "hallway_id",
-                    "length": 0,
-                    "width": 0,
-                    "agents_distribution": X% # percentage of people in this hallway compared to the entire map
-                },
-                ...
-            ]
-        function_list: list of string: ["y = a * x + b (from,to)", ...] # dictate the number of people in the entire map
-        events_list: list of json object:
-            [
-                {
-                    "AgvIDs": [],
-                    "AgvDirections": [],
-                    "time_stamp": 0,
-                    "hallway_id": "hallway_id"
-                }
-            ]
-
-        output:
-        {
-            "Scenario_ID": "scenario_id",
-            "hallways": [
-                {
-                    "hallway_id": "hallway_id",
-                    "length": 0,
-                    "width": 0,
-                    "agv_ids": [],
-                    "agv_directions": [],
-                    "human_type_distribution": [22,5,17,22,17,17], # this one is constant
-                    "number_of_people": function, # (y = a * x + b)/100 * agents_distribution # function change depend on the time_stamp(if from <= time_stamp <= to then use this function)
-                    "time_stamp": 0
-                },
-                ...
-            ]
-        }
-        """
         self.Scenario["Scenario_ID"] = self.scenario_id
         self.Scenario["MaxAgents"] = self.MaxAgents
         self.Scenario["Events"] = []

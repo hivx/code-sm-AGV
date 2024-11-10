@@ -100,11 +100,6 @@ class HoldingEvent(Event):
 
     def process(self):
         added_cost = self.calculateCost()
-        # Assuming next_node is calculated or retrieved from some method
-        #next_node = self.calculate_next_node()
-        #pdb.set_trace() 
-        #Lần 2 gọi get_next_node của AGV 
-        #next_node = self.agv.get_next_node("""ended_event = True""")
         next_node = self.agv.get_next_node()
         self.updateGraph()  # Optional, if there's a need to update the graph based on this event
         self.getNext()
@@ -132,13 +127,7 @@ class MovingEvent(Event):
         if(t1 != self.start_time):
             if(self.graph.graph_processor.print_out):
                 print("Errror")
-            #pdb.set_trace()
-            # Lấy thông tin về khung hiện tại
-            """current_frame = inspect.currentframe()
-            # Lấy tên của hàm gọi my_function
-            caller_name = inspect.getframeinfo(current_frame.f_back).function
-            if(self.graph.graph_processor.print_out):
-                print(f'MovingEvent.py:19 {caller_name}')"""
+                
     def __str__(self):
         M = self.graph.number_of_nodes_in_space_graph
         space_start_node = self.start_node % M + (M if self.start_node % M == 0 else 0)

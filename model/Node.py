@@ -156,7 +156,7 @@ class Node:
         )
 
     def _create_halting_event(self, event, next_vertex, delta_t):
-        from .HaltingEvent import HaltingEvent
+        from controller.EventGenerator import HaltingEvent
         return HaltingEvent(
             event.end_time,
             event.graph.graph_processor.H,

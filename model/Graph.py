@@ -1,14 +1,14 @@
 import os
 import pdb
 from collections import deque, defaultdict
-from .utility import utility
+from model.utility import utility
 import inspect
 from controller.NodeGenerator import RestrictionNode
 from controller.NodeGenerator import TimeWindowNode
 from controller.NodeGenerator import TimeoutNode
-from .Node import Node
+from model.Node import Node
 import config
-from .hallway_simulator_module.HallwaySimulator import BulkHallwaySimulator
+from model.hallway_simulator_module.HallwaySimulator import BulkHallwaySimulator
 import json
 
 class bcolors:
@@ -221,7 +221,7 @@ class Graph:
         return count
             
     def insertEdgesAndNodes(self, start, end, edge):
-        from .Node import Node
+        from model.Node import Node
         start_id = start if isinstance(start, int) else start.id
         end_id = end if isinstance(end, int) else end.id
         self.adjacency_list[start_id].append((end_id, edge))
@@ -610,7 +610,7 @@ class Graph:
         return start
     
     def getAllNewStartedNodes(self, excludedAgv = None):
-        from .AGV import AGV
+        from model.AGV import AGV
         allAGVs = AGV.all_instances()
         started_nodes = set()
         from controller.EventGenerator import ReachingTargetEvent
@@ -657,7 +657,7 @@ class Graph:
                 file.write(f"a {edge[0]} {edge[1]} {edge[2]} {edge[3]} {edge[4]}\n")
 
     def remove_node_and_origins(self, node_id):
-        from .Node import Node
+        from model.Node import Node
         node = None
         if isinstance(node_id, Node):
             node = node_id
@@ -709,6 +709,3 @@ class Graph:
     def __str__(self):
         return "\n".join(f"{start} -> {end} (Weight: {weight})" for start in self.adjacency_list for end, weight in self.adjacency_list[start])
 
-#def initialize_graph():
-    # Function to populate the graph if needed
-    #return graph
