@@ -49,8 +49,8 @@ class Node:
         graph.add_edge(self.id, other_node.id, weight)
         
     def getEventForReaching(self, event):
-        from .HoldingEvent import HoldingEvent
-        from .ReachingTargetEvent import ReachingTargetEvent
+        from controller.EventGenerator import HoldingEvent
+        from controller.EventGenerator import ReachingTargetEvent
         
         current_node = event.agv.current_node.id if isinstance(event.agv.current_node, Node) else event.agv.current_node
 
@@ -66,7 +66,7 @@ class Node:
         if (self.id % event.graph.number_of_nodes_in_space_graph) == (
             current_node % event.graph.number_of_nodes_in_space_graph
         ):
-            from .StartEvent import StartEvent
+            from controller.EventGenerator import StartEvent
             if(not isinstance(event, StartEvent)):
                 event.agv.move_to(event)
             return HoldingEvent(
@@ -115,7 +115,7 @@ class Node:
         return self._create_halting_event(event, next_vertex, delta_t)
 
     def _is_start_event(self, event):
-        from .StartEvent import StartEvent
+        from controller.EventGenerator import StartEvent
         return isinstance(event, StartEvent)
 
     def _get_next_vertex(self, event, M):
@@ -141,11 +141,11 @@ class Node:
         return edges[index][0].id
 
     def _create_reaching_target_event(self, event, next_vertex):
-        from .ReachingTargetEvent import ReachingTargetEvent
+        from controller.EventGenerator import ReachingTargetEvent
         return ReachingTargetEvent(event.end_time, event.end_time, event.agv, event.graph, next_vertex)
 
     def _create_moving_event(self, event, next_vertex, delta_t):
-        from .MovingEvent import MovingEvent
+        from controller.EventGenerator import MovingEvent
         return MovingEvent(
             event.end_time,
             event.end_time + delta_t,

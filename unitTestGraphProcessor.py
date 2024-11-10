@@ -1,14 +1,14 @@
 from model.Graph import Graph#, graph
 from model.AGV import AGV
 from model.Event import Event, debug
-from model.StartEvent import StartEvent
+from controller.EventGenerator import StartEvent
 from model.Graph import Graph
 from model.TimeWindowNode import TimeWindowNode
 from model.RestrictionNode import RestrictionNode 
 from model.TimeWindowEdge import TimeWindowEdge
 from model.RestrictionEdge import RestrictionEdge
 import config
-from GraphProcessor import GraphProcessor
+from controller.GraphProcessor import GraphProcessor
 import subprocess
 import sys
 import pdb

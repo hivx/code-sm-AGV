@@ -1,11 +1,11 @@
 from model.Graph import Graph, bcolors#, graph
 from model.AGV import AGV
 from model.Event import Event, debug
-from model.StartEvent import StartEvent
+from controller.EventGenerator import StartEvent
 from model.Logger import Logger
 import config
 from discrevpy import simulator
-from GraphProcessor import GraphProcessor
+from controller.GraphProcessor import GraphProcessor
 import subprocess
 import sys
 import pdb

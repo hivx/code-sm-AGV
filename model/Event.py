@@ -11,7 +11,6 @@ import config
 from inspect import currentframe, getframeinfo
 from .NXSolution import NetworkXSolution
 
-
 number_of_nodes_in_space_graph = 0
 debug = 0
 allAGVs = {}
@@ -115,9 +114,9 @@ class Event:
                             #pdb.set_trace()
                         print(f'{node.id}', end= ' ')
                     print()"""
-        from .HoldingEvent import HoldingEvent
-        from .MovingEvent import MovingEvent
-        from .HaltingEvent import HaltingEvent
+        from controller.EventGenerator import HaltingEvent
+        from controller.EventGenerator import MovingEvent
+        from controller.EventGenerator import HoldingEvent
         self.solve()
 
         if(len(self.agv.get_traces()) == 0):

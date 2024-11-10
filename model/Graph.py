@@ -613,7 +613,7 @@ class Graph:
         from .AGV import AGV
         allAGVs = AGV.all_instances()
         started_nodes = set()
-        from .ReachingTargetEvent import ReachingTargetEvent
+        from controller.EventGenerator import ReachingTargetEvent
         for agv in allAGVs:
             if(not isinstance(agv.event, ReachingTargetEvent)):
                 started_nodes.add(agv.current_node)

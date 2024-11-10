@@ -1,4 +1,4 @@
-from .Node import Node
+from model.Node import Node
 
 class TimeWindowNode(Node):
     def __init__(self, ID, time_window):
@@ -24,7 +24,7 @@ class TimeWindowNode(Node):
         return None
     
     def getEventForReaching(self, event):
-        from .ReachingTargetEvent import ReachingTargetEvent
+        from controller.EventGenerator import ReachingTargetEvent
         if self.id == event.agv.target_node.id:
             #pdb.set_trace()
             print(f"Target {event.agv.target_node.id}")
