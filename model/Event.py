@@ -191,7 +191,7 @@ class Event:
         # else:
         # print("No edge found between", self.start_node, "and", self.end_node)
 
-    def calculateCost(self):
+    def calculate_cost_event(self):
         # Increase cost by the actual time spent in holding
         cost_increase = self.graph.graph_processor.alpha*(self.end_time - self.start_time)
         self.agv.cost += cost_increase

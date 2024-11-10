@@ -20,14 +20,14 @@ class HaltingEvent(Event):
         if(self.end_time >= self.graph.H):
             pass
 
-    def calculateCost(self):
+    def calculate_cost_halting(self):
         #pdb.set_trace()
         # Tính chi phí dựa trên thời gian di chuyển thực tế
         cost_increase = float('inf') if(self.end_node != self.agv.target_node.id) else self.end_time - self.start_time
         self.agv.cost += cost_increase  # Cập nhật chi phí của AGV
         return cost_increase
 
-    def re_calculate(self, path):
+    def re_calculate_halting(self, path):
         cost = 0
         delta_cost = 0
         prev = 0
@@ -67,8 +67,8 @@ class HaltingEvent(Event):
             f"AGV {self.agv.id} moves from {start}({space_start_node}) to {self.end_node}({space_end_node}) but time outs!!!!"
         )
         print(f'Because it left {self.start_node }({self.start_node % M + (M if self.start_node % M == 0 else 0)}) as {self.start_time} and spending {self.delta_t} for moving')
-        self.re_calculate(self.agv.path)
-        self.calculateCost()
+        self.re_calculate_halting(self.agv.path)
+        self.calculate_cost_halting()
         print(f"The total cost of {self.agv.id} is {self.agv.cost}")
         config.haltingAGVs = config.haltingAGVs + 1
         #self.getNext()
@@ -97,8 +97,6 @@ class HoldingEvent(Event):
             pass
 
     def process(self):
-        # added_cost = self.calculateCost()
-        # next_node = self.agv.get_next_node()
         self.updateGraph()  # Optional, if there's a need to update the graph based on this event
         self.getNext()
         
@@ -181,7 +179,7 @@ class MovingEvent(Event):
         self.agv.update_traces(self.end_node, self.graph.nodes[real_end_node])
         self.graph.reset_agv(real_end_node, self.agv)
 
-    def calculateCost(self):
+    def calculate_cost_moving(self):
         #pdb.set_trace()
         # Tính chi phí dựa trên thời gian di chuyển thực tế
         cost_increase = self.graph.graph_processor.alpha*(self.end_time - self.start_time)
@@ -191,7 +189,7 @@ class MovingEvent(Event):
     def process(self):
         if(self.graph.graph_processor.print_out):
             print(self)
-        self.calculateCost()
+        self.calculate_cost_moving()
         # Thực hiện cập nhật đồ thị khi xử lý sự kiện di chuyển
         self.updateGraph()
         if(self.force_quit):
@@ -259,7 +257,7 @@ class ReachingTargetEvent(Event):
                     #pdb.set_trace()
                     del self.graph.graph_processor.time_window_controller.TWEdges[source_id][index]
 
-    def calculateCost(self):
+    def calculate_cost_reaching(self):
         # Retrieve the weight of the last edge traversed by the AGV
         if self.agv.previous_node is not None and self.target_node is not None:
             last_edge_weight = self.last_cost
@@ -280,7 +278,7 @@ class ReachingTargetEvent(Event):
         return self.agv.cost
 
 
-    def re_calculate(self, path):
+    def re_calculate_reaching(self, path):
         cost = 0
         delta_cost = 0
         prev = 0
@@ -318,8 +316,8 @@ class ReachingTargetEvent(Event):
                 )
         #pdb.set_trace()
         #print(self.agv.path)
-        self.re_calculate(self.agv.path)
-        cost = self.calculateCost()  # Calculate and update the cost of reaching the target
+        self.re_calculate_reaching(self.agv.path)
+        cost = self.calculate_cost_reaching()  # Calculate and update the cost of reaching the target
         #print("DSFFDdsfsdDF")
         
         print(f"The total cost of {self.agv.id} is {cost}")
@@ -349,7 +347,7 @@ class RestrictionEvent(Event):
             # Đánh dấu AGV cuối cùng thay đổi đồ thị
             self.graph.lastChangedByAGV = self.agv.id
 
-    def calculateCost(self):
+    def calculate_cost_restriction(self):
         # Chi phí của AGV sẽ được tăng thêm một lượng bằng trọng số của cung mà AGV đi trên đồ thị TSG
         edge = self.graph.get_edge(self.start_node, self.end_node)
         if edge:
@@ -367,14 +365,14 @@ class RestrictionEvent(Event):
             f"AGV {self.agv.id} moves from {self.start_node} to {self.end_node} under restrictions, taking {self.end_time - self.start_time} seconds"
         )
         self.updateGraph()
-        self.calculateCost()
+        self.calculate_cost_restriction()
 
 class TimeWindowsEvent(Event):
     def __init__(self, start_time, end_time, agv, graph, target_node):
         super().__init__(start_time, end_time, agv, graph)
         self.target_node = target_node  # Mục tiêu mà AGV phải đạt đến trong một khoảng thời gian nhất định
 
-    def calculateCost(self):
+    def calculate_cost_time(self):
         # Chi phí dựa trên trọng số của cung mà AGV đi trên đồ thị TSG
         edge = self.graph.get_edge(self.agv.current_node, self.target_node)
         if edge:
@@ -388,7 +386,7 @@ class TimeWindowsEvent(Event):
 
     def getNext(self):
         # Tính toán chi phí
-        self.calculateCost()
+        self.calculate_cost_time()
         # Có thể thực hiện các hành động tiếp theo tùy thuộc vào logic của bạn
         # Ví dụ: kiểm tra xem có sự kiện tiếp theo cần được lên lịch không
 
