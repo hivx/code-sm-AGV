@@ -16,6 +16,17 @@ import config
 """ Mô tả yêu cầu của code:
 https://docs.google.com/document/d/13S_Ycg-aB4GjEm8xe6tAoUHzhS-Z1iFnM4jX_bWFddo/edit?usp=sharing """
 
+class bcolors:
+    HEADER = '\033[95m'
+    OKBLUE = '\033[94m'
+    OKCYAN = '\033[96m'
+    OKGREEN = '\033[92m'
+    WARNING = '\033[93m'
+    RED = '\033[91m'
+    ENDC = '\033[0m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
+
 class GraphProcessor:
     def __init__(self):
         self.adj = []  # Adjacency matrix
@@ -41,6 +52,8 @@ class GraphProcessor:
         self.end_ban = -1
         self._seed = 0
         self.num_max_agvs = 0
+        self.graph = None
+        # self.number_of_nodes_in_space_graph = -1 if graph_processor is None else graph_processor.M
         
     @property
     def target_nodes(self):
@@ -68,10 +81,10 @@ class GraphProcessor:
         return None
     
     def getReal(self, start_id, next_id, agv):
-        M = self.number_of_nodes_in_space_graph
+        M = self.graph.number_of_nodes_in_space_graph
         result = -1
         
-        # real_start_id, old_real_path = self._get_real_start_id_and_path(start_id, agv, M)
+        real_start_id, old_real_path = self._get_real_start_id_and_path(start_id, agv, M)
         start_time, end_time = self._calculate_times(start_id, next_id, M)
         space_start_node, space_end_node = self._get_space_nodes(start_id, next_id, M)
         
@@ -90,6 +103,79 @@ class GraphProcessor:
         result = self._calculate_final_result(result, start_time, end_time)
         
         return self._handle_collisions(result, next_id, agv, M)
+
+    def _get_real_start_id_and_path(self, start_id, agv, M):
+        if agv is None:
+            return start_id % M + (M if start_id % M == 0 else 0), []
+        old_real_path = [(node % M + (M if node % M == 0 else 0)) for node in agv.path]
+        real_start_id = start_id % M + (M if start_id % M == 0 else 0)
+        if real_start_id in old_real_path:
+            return real_start_id, old_real_path
+        agv.path.add(start_id)
+        return real_start_id, old_real_path
+
+    def _calculate_times(self, start_id, next_id, M):
+        start_time = start_id // M - (1 if start_id % M == 0 else 0)
+        end_time = next_id // M - (1 if next_id % M == 0 else 0)
+        return start_time, end_time
+
+    def _get_space_nodes(self, start_id, next_id, M):
+        space_start_node = start_id % M + (M if start_id % M == 0 else 0)
+        space_end_node = next_id % M + (M if next_id % M == 0 else 0)
+        return space_start_node, space_end_node
+
+    def _get_min_moving_time(self, space_start_node, space_end_node):
+        edges_with_cost = {
+            (int(edge[1]), int(edge[2])): [int(edge[4]), int(edge[5])]
+            for edge in self.space_edges
+            if edge[3] == '0' and int(edge[4]) >= 1
+        }
+        return edges_with_cost.get((space_start_node, space_end_node), [-1, -1])[1]
+
+    def _is_target_node(self, next_id):
+        all_ids_of_target_nodes = [node.id for node in self.target_nodes]
+        return next_id in all_ids_of_target_nodes
+
+    def _update_agv_path(self, agv, node_id):
+        if agv is not None:
+            agv.path.add(node_id)
+
+    def _handle_special_cases(self, next_id, start_time, end_time, result):
+        try:
+            if isinstance(self.graph.nodes[next_id], TimeWindowNode):
+                return end_time - start_time if result == -1 else result
+        except KeyError:
+            for e in self.graph_processor.ts_edges:
+                if e[0] % self.number_of_nodes_in_space_graph == start_id % self.number_of_nodes_in_space_graph:
+                    result = e[4] if result == -1 else result
+            return abs(end_time - start_time) if result == -1 else result
+        return result
+
+    def _calculate_sfm_runtime(self, space_start_node, space_end_node, agv, start_time, result):
+        runtime = self.graph.getAGVRuntime(config.filepath, config.functions_file, space_start_node, space_end_node, agv, start_time)
+        if runtime != -1:
+            print(f"{bcolors.OKGREEN}{agv.id} from {space_start_node} to {space_end_node} at time {start_time} has runtime {runtime}.{bcolors.ENDC}")
+            return runtime
+        return result
+
+    def _calculate_final_result(self, result, start_time, end_time):
+        if result == -1:
+            return 3 if (end_time - start_time <= 3) else 2 * (end_time - start_time) - 3
+        return result
+
+    def _handle_collisions(self, result, next_id, agv, M):
+        all_ids_of_target_nodes = [node.id for node in self.target_nodes]
+        collision = True
+        while collision:
+            collision = False
+            if next_id not in all_ids_of_target_nodes and next_id in self.graph.nodes:
+                node = self.graph.nodes[next_id]
+                if node.agv and node.agv != agv:
+                    print(f'{node.agv.id} != {agv.id}')
+                    collision = True
+                    result += 1
+                    next_id += M
+        return result
         
     def process_input_file(self, filepath):
         self.space_edges = []
@@ -345,7 +431,7 @@ class GraphProcessor:
         if(self.print_out):
             print("TSG.txt file created.")
 
-    def init_agvs_n_events(self, all_agvs, events, graph):
+    def init_agvs_n_events(self, all_agvs, events, graph, graph_processor):
         from controller.EventGenerator import StartEvent
         from model.AGV import AGV
         for node_id in self.started_nodes:
@@ -354,7 +440,7 @@ class GraphProcessor:
             #print(Event.getValue("number_of_nodes_in_space_graph"))
             start_time = node_id // self.M
             end_time = start_time
-            start_event = StartEvent(start_time, end_time, agv, graph)  # Start event at time 0
+            start_event = StartEvent(start_time, end_time, agv, graph, graph_processor)  # Start event at time 0
             events.append(start_event)
             all_agvs.add(agv)  # Thêm vào tập hợp AGV
     

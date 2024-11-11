@@ -77,7 +77,6 @@ while(config.count < 2):
     if(execution_time >= 5 and graph_processor.print_out):
         print(f"Thời gian thực thi: {execution_time} giây")
     
-    
     graph = Graph(graph_processor)  # Assuming a Graph class has appropriate methods to handle updates
     
     events = []
@@ -90,7 +89,7 @@ while(config.count < 2):
     number_of_nodes_in_space_graph = Event.getValue("number_of_nodes_in_space_graph")
     # Mở file để đọc
     #pdb.set_trace()
-    graph_processor.init_agvs_n_events(allAGVs, events, graph)
+    graph_processor.init_agvs_n_events(allAGVs, events, graph, graph_processor)
     graph_processor.init_tasks(TASKS)
     graph_processor.init_nodes_n_edges(graph) 
     events = sorted(events, key=lambda x: x.start_time)

@@ -97,7 +97,7 @@ class Node:
         if next_vertex == -1:
             pdb.set_trace()
         
-        delta_t = event.graph.getReal(event.agv.current_node, next_vertex, event.agv)
+        delta_t = event.graph_processor.getReal(event.agv.current_node, next_vertex, event.agv)
         all_ids_of_target_nodes = [node.id for node in event.graph.graph_processor.target_nodes]
         
         if next_vertex in all_ids_of_target_nodes:
@@ -153,6 +153,7 @@ class Node:
             event.graph,
             event.agv.current_node,
             next_vertex,
+            event.graph_processor,
         )
 
     def _create_halting_event(self, event, next_vertex, delta_t):

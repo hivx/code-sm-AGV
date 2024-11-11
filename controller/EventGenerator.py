@@ -3,8 +3,8 @@ import inspect
 import pdb
 import config
 class HaltingEvent(Event):
-    def __init__(self, start_time, end_time, agv, graph, start_node, end_node, delta_t):
-        super().__init__(start_time, end_time, agv, graph)
+    def __init__(self, start_time, end_time, agv, graph, start_node, end_node, delta_t, graph_processor):
+        super().__init__(start_time, end_time, agv, graph, graph_processor)
         self.start_node = start_node
         self.end_node = end_node
         self.delta_t = delta_t
@@ -77,9 +77,9 @@ class HaltingEvent(Event):
         return f"HaltingEvent for {self.agv.id} because it leaves {self.start_node} at {self.start_time} and its finished time at {self.end_time}"
 
 class HoldingEvent(Event):
-    def __init__(self, start_time, end_time, agv, graph, duration):
+    def __init__(self, start_time, end_time, agv, graph, duration, graph_processor):
         
-        super().__init__(start_time, end_time, agv, graph)
+        super().__init__(start_time, end_time, agv, graph, graph_processor)
         self.duration = duration
         self.number_of_nodes_in_space_graph = Event.getValue("number_of_nodes_in_space_graph")
         #print(self)
@@ -108,8 +108,8 @@ from discrevpy import simulator
 from datetime import datetime
 
 class MovingEvent(Event):
-    def __init__(self, start_time, end_time, agv, graph, start_node, end_node):
-        super().__init__(start_time, end_time, agv, graph)
+    def __init__(self, start_time, end_time, agv, graph, start_node, end_node, graph_processor):
+        super().__init__(start_time, end_time, agv, graph, graph_processor)
         #pdb.set_trace()
         self.start_node = start_node
         self.end_node = end_node
@@ -158,7 +158,7 @@ class MovingEvent(Event):
                 if real_end_node in self.graph.nodes and self.graph.nodes[real_end_node].agv is not None:
                     if self.graph.nodes[real_end_node].agv.id != self.agv.id:
                         continue
-                new_event = MovingEvent(self.start_time, self.end_time + delta_t, self.agv, self.graph, self.agv.current_node, real_end_node)
+                new_event = MovingEvent(self.start_time, self.end_time + delta_t, self.agv, self.graph, self.agv.current_node, real_end_node, self.graph_processor)
                 break
             else:
                 new_event = HaltingEvent(self.end_time, self.graph.graph_processor.H, self.agv, self.graph, self.agv.current_node, real_end_node, delta_t)    
@@ -206,8 +206,8 @@ class MovingEvent(Event):
 
 from model.AGV import AGV
 class ReachingTargetEvent(Event):
-    def __init__(self, start_time, end_time, agv, graph, target_node):
-        super().__init__(start_time, end_time, agv, graph)
+    def __init__(self, start_time, end_time, agv, graph, target_node, graph_processor):
+        super().__init__(start_time, end_time, agv, graph, graph_processor)
         self.target_node = target_node
         node = self.graph.nodes[target_node]
         M = self.graph.number_of_nodes_in_space_graph
@@ -330,8 +330,8 @@ class ReachingTargetEvent(Event):
         return f"ReachingTargetEvent for {self.agv.id} at time: {self.end_time} and it reaches the artificial node {self.target_node}"
 
 class RestrictionEvent(Event):
-    def __init__(self, start_time, end_time, agv, graph, start_node, end_node):
-        super().__init__(start_time, end_time, agv, graph)
+    def __init__(self, start_time, end_time, agv, graph, start_node, end_node, graph_processor):
+        super().__init__(start_time, end_time, agv, graph, graph_processor)
         self.start_node = start_node
         self.end_node = end_node
 
@@ -368,8 +368,8 @@ class RestrictionEvent(Event):
         self.calculate_cost_restriction()
 
 class TimeWindowsEvent(Event):
-    def __init__(self, start_time, end_time, agv, graph, target_node):
-        super().__init__(start_time, end_time, agv, graph)
+    def __init__(self, start_time, end_time, agv, graph, target_node, graph_processor):
+        super().__init__(start_time, end_time, agv, graph, graph_processor)
         self.target_node = target_node  # Mục tiêu mà AGV phải đạt đến trong một khoảng thời gian nhất định
 
     def calculate_cost_time(self):
@@ -398,8 +398,8 @@ class TimeWindowsEvent(Event):
         self.getNext()
     
 class StartEvent(Event):
-    def __init__(self, start_time, end_time, agv, graph):
-        super().__init__(start_time, end_time, agv, graph)
+    def __init__(self, start_time, end_time, agv, graph, graph_processor):
+        super().__init__(start_time, end_time, agv, graph, graph_processor)
         print(self)
 
     def process(self):

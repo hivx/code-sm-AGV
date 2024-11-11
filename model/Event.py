@@ -17,12 +17,13 @@ allAGVs = {}
 numOfCalling = 0
 
 class Event:
-    def __init__(self, start_time, end_time, agv, graph):
+    def __init__(self, start_time, end_time, agv, graph, graph_processor):
         self.start_time = int(start_time)
         self.end_time = int(end_time)
         self.agv = agv
         self.agv.event = self
         self.graph = graph
+        self.graph_processor = graph_processor
         self.pns_path = ""
         #pdb.set_trace()
 
