@@ -7,6 +7,7 @@ from controller.NodeGenerator import TimeWindowNode
 from controller.NodeGenerator import RestrictionNode
 from controller.RestrictionController import RestrictionController
 from model.Node import Node
+from model.hallway_simulator_module.HallwaySimulator import BulkHallwaySimulator
 from collections import deque
 from scipy.sparse import lil_matrix
 import numpy as np
@@ -53,7 +54,6 @@ class GraphProcessor:
         self._seed = 0
         self.num_max_agvs = 0
         self.graph = None
-        # self.number_of_nodes_in_space_graph = -1 if graph_processor is None else graph_processor.M
         
     @property
     def target_nodes(self):
@@ -145,14 +145,14 @@ class GraphProcessor:
             if isinstance(self.graph.nodes[next_id], TimeWindowNode):
                 return end_time - start_time if result == -1 else result
         except KeyError:
-            for e in self.graph_processor.ts_edges:
+            for e in self.ts_edges:
                 if e[0] % self.number_of_nodes_in_space_graph == start_id % self.number_of_nodes_in_space_graph:
                     result = e[4] if result == -1 else result
             return abs(end_time - start_time) if result == -1 else result
         return result
 
     def _calculate_sfm_runtime(self, space_start_node, space_end_node, agv, start_time, result):
-        runtime = self.graph.getAGVRuntime(config.filepath, config.functions_file, space_start_node, space_end_node, agv, start_time)
+        runtime = self.getAGVRuntime(config.filepath, config.functions_file, space_start_node, space_end_node, agv, start_time)
         if runtime != -1:
             print(f"{bcolors.OKGREEN}{agv.id} from {space_start_node} to {space_end_node} at time {start_time} has runtime {runtime}.{bcolors.ENDC}")
             return runtime
@@ -176,7 +176,312 @@ class GraphProcessor:
                     result += 1
                     next_id += M
         return result
+    
+    def getReal_preprocess(self, Map_file, function_file):
+        # read files
+        map_data = None
+        function_data = None
+        with open(Map_file, 'r', encoding='utf-8') as file:
+            map_data = file.readlines()
+        with open(function_file, 'r', encoding='utf-8') as file:
+            function_data = file.readlines()
+        hallways_list = []
+        functions_list = []
+        for line in map_data:
+            line = line.strip()
+            parts = line.split(" ")
+            if len(parts) == 8:
+                hallway = {
+                    "hallway_id": parts[6],
+                    "length": int(int(parts[5]) * 0.6),
+                    "width": 4,
+                    "agents_distribution": int(parts[7]),
+                    "src": int(parts[1]),
+                    "dest": int(parts[2])
+                }
+                hallways_list.append(hallway)
+        for line in function_data:
+            line = line.strip()
+            functions_list.append(line)
+        return hallways_list, functions_list
+
+    def getAGVRuntime(self, Map_file, function_file, start_id, next_id, agv, current_time):
+        hallways_list, functions_list = self.getReal_preprocess(Map_file, function_file)
+        agv_id = self._extract_agv_id(agv)
+        direction, hallway_id = self._get_hallway_direction(hallways_list, start_id, next_id)
         
+        if hallway_id is None:
+            print(f"{bcolors.WARNING}Hallway not found!{bcolors.ENDC}")
+            return -1
+
+        events_list = self._create_event_list(agv_id, direction, current_time, hallway_id)
+        hallways_list = self._filter_hallways_list(hallways_list, hallway_id, direction)
+        
+        return self._simulate_bulk_runtime(agv_id, hallway_id, hallways_list, functions_list, events_list)
+
+    def _extract_agv_id(self, agv):
+        return int(agv.id[3:])
+
+    def _get_hallway_direction(self, hallways_list, start_id, next_id):
+        for hallway in hallways_list:
+            if hallway["src"] == start_id and hallway["dest"] == next_id:
+                return 1, hallway["hallway_id"]
+            elif hallway["src"] == next_id and hallway["dest"] == start_id:
+                return 0, hallway["hallway_id"]
+        return 0, None
+
+    def _create_event_list(self, agv_id, direction, time_stamp, hallway_id):
+        event = {
+            "AgvIDs": [agv_id],
+            "AgvDirections": [direction],
+            "time_stamp": int(time_stamp),
+            "hallway_id": hallway_id
+        }
+        return [event]
+
+    def _filter_hallways_list(self, hallways_list, hallway_id, direction):
+        return [
+            hallway for hallway in hallways_list
+            if hallway["hallway_id"] == hallway_id and (hallway["src"] - hallway["dest"]) * direction > 0
+        ]
+
+    def _simulate_bulk_runtime(self, agv_id, hallway_id, hallways_list, functions_list, events_list):
+        bulk_sim = BulkHallwaySimulator("test", 3600, hallways_list, functions_list, events_list)
+        result = bulk_sim.run_simulation()
+        completion_time = result[agv_id][hallway_id]["completion_time"]
+        print(f"{bcolors.OKGREEN}AGV {agv_id} has runtime {completion_time} in hallway {hallway_id}.{bcolors.ENDC}")
+        return completion_time
+    
+    def insertEdgesAndNodes(self, start, end, edge):
+        start_id = start if isinstance(start, int) else start.id
+        end_id = end if isinstance(end, int) else end.id
+        self.graph.adjacency_list[start_id].append((end_id, edge))
+        start_node = start if isinstance(start, Node) else self.find_node(start)
+        end_node = end if isinstance(end, Node) else self.find_node(end)
+        if self.graph.nodes[start_id] is None:
+            self.graph.nodes[start_id] = start_node
+        if self.graph.nodes[end_id] is None:
+            self.graph.nodes[end_id] = end_node
+            
+    def find_unique_nodes(self, file_path = 'traces.txt'):
+        """ Find nodes that are only listed as starting nodes in edges. """
+        if not os.path.exists(file_path):
+            print(f"File {file_path} does not exist.")
+            return []
+        
+        target_ids = set()
+        with open(file_path, 'r', encoding='utf-8') as file:
+            for line in file:
+                if line.startswith('a'):
+                    parts = line.split()
+                    target_ids.add(int(parts[3]))
+
+        unique_ids = set()
+        with open(file_path, 'r', encoding='utf-8') as file:
+            for line in file:
+                if line.startswith('a'):
+                    parts = line.split()
+                    node_id = int(parts[1])
+                    if node_id not in target_ids:
+                        unique_ids.add(node_id)
+
+        return list(unique_ids)
+    
+    def update(self,currentpos,nextpos,realtime):
+        list = utility()
+        del self.matrix[currentpos,nextpos]
+        q = deque()
+        q.append(nextpos)
+        while q:
+            pos = q[0]
+            q.pop()
+            for i in list.findid(pos):
+                if (pos,i) in self.matrix:
+                    del self.matrix[pos,i]
+                    q.append(i)
+        nextpos = list.M*(int(currentpos/list.M)+ realtime) + list.getid(nextpos)
+        self.matrix[currentpos,nextpos] = realtime
+        q.append(nextpos)
+        while q:
+            pos = q[0]
+            q.pop()
+            for i in list.findid(pos):
+                if (pos,i) not in self.matrix:
+                    self.matrix[pos,i] = int((pos-i)/list.M)
+                    q.append(i)
+    
+    def update_graph(self, id1=-1, id2=-1, end_id=-1, agv_id=None):
+        """Cập nhật đồ thị với thông tin cạnh mới."""
+        ID1, ID2, endid = self.get_ids(id1, id2, end_id)
+        M = self.graph.number_of_nodes_in_space_graph
+        current_time, new_node_id = self.calculate_times(ID1, ID2, endid, M)
+
+        self.process_adjacency_list(current_time, new_node_id, M)
+        
+        q = self.update_new_started_nodes(new_node_id)
+        new_edges = self.insert_from_queue(q, self.graph.adjacency_list)
+        self.process_new_edges(new_edges)
+
+        if self.version_check(current_time):
+            self.graph.version += 1
+
+        new_halting_edges = self.collect_new_halting_edges()
+        self.graph.write_to_file([agv_id, new_node_id], new_halting_edges)                
+    
+    def process_adjacency_list(self, current_time, new_node_id, M):
+        """Duyệt qua từng phần tử của adjacency_list và cập nhật thông tin."""
+        for source_id, edges in list(self.graph.adjacency_list.items()):
+            isContinued = any(node.id == source_id for node in self.target_nodes)
+            if isContinued:
+                continue
+
+            if source_id in self.graph.nodes:
+                node = self.graph.nodes[source_id]
+                time = source_id // M - (1 if source_id % M == 0 else 0)
+                if time < current_time and not isinstance(node, (TimeWindowNode, RestrictionNode)):
+                    self.update_nodes(source_id, current_time, M)
+    
+    def update_nodes(self, source_id, current_time, M):
+        """Cập nhật thông tin nút và xóa khỏi danh sách."""
+        del self.graph.adjacency_list[source_id]
+        if self.graph.nodes[source_id].agv is not None:
+            space_id = M if (source_id % M == 0) else source_id % M
+            new_source_id = current_time * M + space_id
+            self.transfer_agv(source_id, new_source_id)
+        del self.graph.nodes[source_id]
+    
+    def transfer_agv(self, source_id, new_source_id):
+        """Chuyển AGV từ nút cũ sang nút mới."""
+        try:
+            if new_source_id in self.graph.nodes:
+                self.graph.nodes[new_source_id].agv = self.graph.nodes[source_id].agv
+            index = self.started_nodes.index(source_id)
+            self.started_nodes[index] = new_source_id
+        except ValueError:
+            pass
+        
+    def get_ids(self, id1, id2, end_id):
+        """Nhận ID từ người dùng hoặc sử dụng giá trị mặc định."""
+        ID1 = int(input("Nhap ID1: ")) if id1 == -1 else id1
+        ID2 = int(input("Nhap ID2: ")) if id2 == -1 else id2
+        endid = int(input("Nhap ID thực sự khi AGV kết thúc hành trình: ")) if end_id == -1 else end_id
+        return ID1, ID2, endid
+
+    def calculate_times(self, ID1, ID2, endid, M):
+        """Tính thời gian và ID nút mới."""
+        time2 = ID1 // M - (1 if ID1 % M == 0 else 0)
+        current_time = endid // M - (1 if endid % M == 0 else 0)
+        new_node_id = current_time * M + (M if ID2 % M == 0 else ID2 % M)
+        return current_time, new_node_id
+
+    def update_new_started_nodes(self, new_node_id):
+        """Cập nhật danh sách các nút mới bắt đầu và trả về hàng đợi."""
+        q = deque([new_node_id])
+        new_started_nodes = self.graph.getAllNewStartedNodes()
+        for start in new_started_nodes:
+            if start != new_node_id:
+                q.append(start)
+        return q
+
+    def process_new_edges(self, new_edges):
+        """Xử lý và cập nhật các cạnh mới vào đồ thị."""
+        for edge in new_edges:
+            arr = self.graph.parse_string(edge)
+            source_id, dest_id = arr[0], arr[1]
+            self.add_edge_to_graph(source_id, dest_id, arr)
+
+    def add_edge_to_graph(self, source_id, dest_id, arr):
+        """Thêm một cạnh mới vào đồ thị."""
+        if source_id not in self.graph.nodes:
+            self.graph.nodes[source_id] = self.find_node(source_id)
+        if dest_id not in self.graph.nodes:
+            self.graph.nodes[dest_id] = self.find_node(dest_id)
+
+        if source_id not in self.graph.adjacency_list:
+            self.graph.adjacency_list[source_id] = []
+        
+        found = any(end_id == dest_id for end_id, _ in self.graph.adjacency_list[source_id])
+        if not found:
+            anEdge = self.graph.nodes[source_id].create_edge(self.graph.nodes[dest_id], self.M, self.d, [source_id, dest_id, arr[2], arr[3], arr[4]])
+            self.graph.adjacency_list[source_id].append([dest_id, anEdge])
+        
+        # Add TimeWindowEdge and RestrictionEdge
+        self.time_window_controller.generate_time_window_edges(self.graph.nodes[source_id], self.graph.adjacency_list, self.graph.number_of_nodes_in_space_graph)
+        self.restriction_controller.generate_restriction_edges(self.graph.nodes[source_id], self.graph.nodes[dest_id], self.graph.nodes, self.graph.adjacency_list)
+
+    def version_check(self, current_time):
+        """Kiểm tra nếu phiên bản cần được cập nhật."""
+        time2 = self.graph.number_of_nodes_in_space_graph // self.M - (1 if self.graph.number_of_nodes_in_space_graph % self.M == 0 else 0)
+        return time2 != current_time
+
+    def collect_new_halting_edges(self):
+        """Thu thập các cạnh dừng mới cần được thêm vào."""
+        sorted_edges = sorted(self.graph.adjacency_list.items(), key=lambda x: x[0])
+        new_nodes = set()
+        new_halting_edges = []
+
+        for source_id, edges in sorted_edges:
+            for edge in edges:
+                t = edge[0] // self.M - (1 if edge[0] % self.M == 0 else 0)
+                if t >= self.H and edge[0] not in new_nodes and isinstance(self.graph.nodes[edge[0]], TimeoutNode):
+                    new_nodes.add(edge[0])
+                    for target in self.get_targets():
+                        dest_id = target.id
+                        new_halting_edges.append([edge[0], dest_id, 0, 1, self.H * self.H])
+
+        return new_halting_edges
+    
+    def reset_agv(self, real_node_id, agv):
+        for node_id in self.graph.nodes.keys():
+            if(node_id != real_node_id):
+                if self.graph.nodes[node_id].agv == agv:
+                    self.graph.nodes[node_id].agv = None
+        self.graph.nodes[real_node_id].agv = agv
+    
+    def remove_node_and_origins(self, node_id):
+        node = None
+        if isinstance(node_id, Node):
+            node = node_id
+        elif node_id in self.graph.nodes:
+            node = self.graph.nodes[node_id]
+        else:
+            return
+        node = node_id if isinstance(node_id, Node) else self.graph.nodes[node_id]
+        R = [node]  # Khởi tạo danh sách R với nút cần xóa
+        while R:  # Tiếp tục cho đến khi R rỗng
+            current_node = R.pop()  # Lấy ra nút cuối cùng từ R
+            if current_node.id in self.graph.nodes:  # Kiểm tra xem nút có tồn tại trong đồ thị hay không
+                del self.graph.nodes[current_node.id]  # Nếu có, xóa nút khỏi danh sách các nút
+            for id in self.graph.adjacency_list:
+                edges = []
+                found = False
+                for end_id, edge in self.graph.adjacency_list[id]:
+                    if(end_id == node.id):
+                        #del self.adjacency_list
+                        found = True
+                    else:
+                        edges.append([end_id, edge])
+                if(found):
+                    self.graph.adjacency_list[id] = edges
+            
+    def remove_edge(self, start_node, end_node, agv_id):
+        if (start_node, end_node) in self.graph.edges:
+            del self.graph.edges[(start_node, end_node)]
+            self.graph.lastChangedByAGV = agv_id  # Update the last modified by AGV
+
+    def handle_edge_modifications(self, start_node, end_node, agv):
+        # Example logic to adjust the weights of adjacent edges
+        print(f"Handling modifications for edges connected to {start_node} and {end_node}.")
+        #pdb.set_trace()
+        adjacent_nodes_with_weights = self.graph.adjacency_list.get(end_node, [])
+        # Check adjacent nodes and update as necessary
+        for adj_node, weight in adjacent_nodes_with_weights:
+            if (end_node, adj_node) not in self.graph.lastChangedByAGV or self.graph.lastChangedByAGV[(end_node, adj_node)] != agv.id:
+                # For example, increase weight by 10% as a traffic delay simulation
+                new_weight = int(weight * 1.1)
+                self.graph.adjacency_list[end_node][adj_node] = new_weight
+                print(f"Updated weight of edge {end_node} to {adj_node} to {new_weight} due to changes at {start_node}.")
+ 
     def process_input_file(self, filepath):
         self.space_edges = []
         try:
@@ -472,10 +777,10 @@ class GraphProcessor:
             if(self.print_out):
                 print(f"Khong tim thay canh nao co ID nguon la {source_id}.")
 
-    def init_nodes_n_edges(self, graph):
+    def init_nodes_n_edges(self):
         for edge in self.tsedges:
             if edge is not None:
-                graph.insertEdgesAndNodes(edge.start_node, edge.end_node, edge)
+                self.insertEdgesAndNodes(edge.start_node, edge.end_node, edge)
     
     def check_file_conditions(self):
         try:

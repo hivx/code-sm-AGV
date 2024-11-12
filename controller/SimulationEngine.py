@@ -57,4 +57,4 @@ class SimulationEngine:
         print(f"Processed event: {event}")
         
     def update_graph(self, start_node, end_node, weight):
-        self.graph.update_graph(start_node, end_node, weight)
+        self.graph_processor.update_graph(start_node, end_node, weight)

@@ -142,7 +142,7 @@ class Node:
 
     def _create_reaching_target_event(self, event, next_vertex):
         from controller.EventGenerator import ReachingTargetEvent
-        return ReachingTargetEvent(event.end_time, event.end_time, event.agv, event.graph, next_vertex)
+        return ReachingTargetEvent(event.end_time, event.end_time, event.agv, event.graph, next_vertex, event.graph_processor)
 
     def _create_moving_event(self, event, next_vertex, delta_t):
         from controller.EventGenerator import MovingEvent
@@ -165,6 +165,7 @@ class Node:
             event.graph,
             event.agv.current_node,
             next_vertex,
-            delta_t
+            delta_t,
+            event.graph_processor
         )
    

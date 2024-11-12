@@ -175,9 +175,9 @@ class MovingEvent(Event):
 
     def update_graph_and_traces(self, real_end_node):
         self.agv.current_node = real_end_node
-        self.graph.update_graph(self.start_node, self.end_node, real_end_node, self.agv.id)
+        self.graph_processor.update_graph(self.start_node, self.end_node, real_end_node, self.agv.id)
         self.agv.update_traces(self.end_node, self.graph.nodes[real_end_node])
-        self.graph.reset_agv(real_end_node, self.agv)
+        self.graph_processor.reset_agv(real_end_node, self.agv)
 
     def calculate_cost_moving(self):
         #pdb.set_trace()
@@ -233,7 +233,7 @@ class ReachingTargetEvent(Event):
 
     def updateGraph(self):
         # Không làm gì cả, vì đây là sự kiện đạt đến mục tiêu
-        self.graph.remove_node_and_origins(self.target_node)
+        self.graph_processor.remove_node_and_origins(self.target_node)
         if(self.agv.path[-1] != self.target_node):
             self.target_node = self.agv.path[-1]
             pdb.set_trace()

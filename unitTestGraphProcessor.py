@@ -176,7 +176,7 @@ assert (len(graph.nodes) == len(processor.ts_nodes)), f"Missing some nodes elsew
 id1 = 1
 id2 = 8
 c12 = 3
-graph.update_graph(id1, id2, c12)
+processor.update_graph(id1, id2, c12)
 current_time = id1 // processor.M + c12
 #pdb.set_trace()
 

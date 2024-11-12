@@ -91,7 +91,7 @@ while(config.count < 2):
     #pdb.set_trace()
     graph_processor.init_agvs_n_events(allAGVs, events, graph, graph_processor)
     graph_processor.init_tasks(TASKS)
-    graph_processor.init_nodes_n_edges(graph) 
+    graph_processor.init_nodes_n_edges() 
     events = sorted(events, key=lambda x: x.start_time)
     Event.setValue("allAGVs", allAGVs)
     
