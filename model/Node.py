@@ -56,10 +56,8 @@ class Node:
 
         # Xác định kiểu sự kiện tiếp theo
         delta_t = (self.id // event.graph.number_of_nodes_in_space_graph \
-                                #- (event.graph.graph_processor.d if self.id % event.graph.number_of_nodes_in_space_graph == 0 else 0)) - (
                                 - (1 if self.id % event.graph.number_of_nodes_in_space_graph == 0 else 0)) - (
             current_node // event.graph.number_of_nodes_in_space_graph \
-                                #- (event.graph.graph_processor.d if current_node % event.graph.number_of_nodes_in_space_graph == 0 else 0)
                                 - (1 if current_node % event.graph.number_of_nodes_in_space_graph == 0 else 0)
         )
 
@@ -91,14 +89,14 @@ class Node:
         if not self._is_start_event(event):
             event.agv.move_to(event)
         
-        M = event.graph.graph_processor.M
+        M = event.graph.M
         next_vertex = self._get_next_vertex(event, M)
         
         if next_vertex == -1:
             pdb.set_trace()
         
         delta_t = event.graph_processor.getReal(event.agv.current_node, next_vertex, event.agv)
-        all_ids_of_target_nodes = [node.id for node in event.graph.graph_processor.target_nodes]
+        all_ids_of_target_nodes = [node.id for node in event.graph.target_nodes]
         
         if next_vertex in all_ids_of_target_nodes:
             return self._create_reaching_target_event(event, next_vertex)
@@ -106,11 +104,11 @@ class Node:
         if delta_t == 0:
             pass
         
-        if event.end_time + delta_t < event.graph.graph_processor.H:
+        if event.end_time + delta_t < event.graph_processor.H:
             return self._create_moving_event(event, next_vertex, delta_t)
         
-        if event.graph.graph_processor.print_out:
-            print(f"H = {event.graph.graph_processor.H} and {event.end_time} + {delta_t}")
+        if event.graph_processor.print_out:
+            print(f"H = {event.graph_processor.H} and {event.end_time} + {delta_t}")
         
         return self._create_halting_event(event, next_vertex, delta_t)
 
@@ -125,9 +123,9 @@ class Node:
 
     def _find_next_vertex_from_edges(self, event, M):
         reaching_time = self.id // M - (1 if self.id % M == 0 else 0)
-        for source_id in event.graph.graph_processor.time_window_controller.TWEdges:
+        for source_id in event.graph.time_window_controller.TWEdges:
             if source_id % M == self.id % M:
-                edges = event.graph.graph_processor.time_window_controller.TWEdges.get(source_id)
+                edges = event.graph.time_window_controller.TWEdges.get(source_id)
                 if edges:
                     return self._get_max_cost_vertex(edges, reaching_time)
         return -1
@@ -160,7 +158,7 @@ class Node:
         from controller.EventGenerator import HaltingEvent
         return HaltingEvent(
             event.end_time,
-            event.graph.graph_processor.H,
+            event.graph_processor.H,
             event.agv,
             event.graph,
             event.agv.current_node,

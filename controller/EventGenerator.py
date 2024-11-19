@@ -12,7 +12,7 @@ class HaltingEvent(Event):
         current_frame = inspect.currentframe()
         # Lấy tên của hàm gọi my_function
         caller_name = inspect.getframeinfo(current_frame.f_back).function
-        if(self.graph.graph_processor.print_out):
+        if(self.graph_processor.print_out):
             print(f'HaltingEvent.py:14 {caller_name}')
         #print(self)
 
@@ -32,7 +32,7 @@ class HaltingEvent(Event):
         delta_cost = 0
         prev = 0
         M = self.graph.number_of_nodes_in_space_graph 
-        D = self.graph.graph_processor.d
+        D = self.graph.d
         P = len(path)
         for i in range(P):
             node = path[i]
@@ -40,7 +40,7 @@ class HaltingEvent(Event):
             #pdb.set_trace()
             t2 = node // M - (1 if node % M == 0 else 0)
             t1 = prev // M - (1 if prev % M == 0 else 0)
-            delta_cost = self.graph.graph_processor.alpha*(t2 - t1)
+            delta_cost = self.graph_processor.alpha*(t2 - t1)
             if(i != P - 1):
                 #print('===', end='')
                 if(i > 0):
@@ -59,7 +59,7 @@ class HaltingEvent(Event):
         #pdb.set_trace()
         # Thực hiện cập nhật đồ thị khi xử lý sự kiện di chuyển
         #self.updateGraph()
-        M = self.graph.graph_processor.M
+        M = self.graph.M
         start = self.agv.path[0]
         space_start_node = start % M + (M if start % M == 0 else 0)
         space_end_node = self.end_node % M + (M if self.end_node % M == 0 else 0)
@@ -116,9 +116,9 @@ class MovingEvent(Event):
         self.force_quit = False
         #print(self)
         M = self.graph.number_of_nodes_in_space_graph
-        t1 = self.start_node // M - (self.graph.graph_processor.d if self.start_node % M == 0 else 0)
+        t1 = self.start_node // M - (self.graph.d if self.start_node % M == 0 else 0)
         if(t1 != self.start_time):
-            if(self.graph.graph_processor.print_out):
+            if(self.graph_processor.print_out):
                 print("Errror")
                 
     def __str__(self):
@@ -154,14 +154,14 @@ class MovingEvent(Event):
         while True:
             delta_t += 1
             real_end_node += M * delta_t
-            if self.end_time + delta_t < self.graph.graph_processor.H:
+            if self.end_time + delta_t < self.graph_processor.H:
                 if real_end_node in self.graph.nodes and self.graph.nodes[real_end_node].agv is not None:
                     if self.graph.nodes[real_end_node].agv.id != self.agv.id:
                         continue
                 new_event = MovingEvent(self.start_time, self.end_time + delta_t, self.agv, self.graph, self.agv.current_node, real_end_node, self.graph_processor)
                 break
             else:
-                new_event = HaltingEvent(self.end_time, self.graph.graph_processor.H, self.agv, self.graph, self.agv.current_node, real_end_node, delta_t)    
+                new_event = HaltingEvent(self.end_time, self.graph_processor.H, self.agv, self.graph, self.agv.current_node, real_end_node, delta_t)    
                 break                                    
         simulator.schedule(new_event.end_time, new_event.process)
         self.force_quit = True
@@ -182,19 +182,19 @@ class MovingEvent(Event):
     def calculate_cost_moving(self):
         #pdb.set_trace()
         # Tính chi phí dựa trên thời gian di chuyển thực tế
-        cost_increase = self.graph.graph_processor.alpha*(self.end_time - self.start_time)
+        cost_increase = self.graph_processor.alpha*(self.end_time - self.start_time)
         self.agv.cost += cost_increase  # Cập nhật chi phí của AGV
         return cost_increase
 
     def process(self):
-        if(self.graph.graph_processor.print_out):
+        if(self.graph_processor.print_out):
             print(self)
         self.calculate_cost_moving()
         # Thực hiện cập nhật đồ thị khi xử lý sự kiện di chuyển
         self.updateGraph()
         if(self.force_quit):
             return
-        if(self.graph.graph_processor.print_out):
+        if(self.graph_processor.print_out):
             print(
                 f"AGV {self.agv.id} moves from {self.start_node} to {self.end_node} taking actual time {self.end_time - self.start_time}"
                 )
@@ -213,7 +213,7 @@ class ReachingTargetEvent(Event):
         M = self.graph.number_of_nodes_in_space_graph
         if not hasattr(node, 'earliness'):
             try:
-                node = next(node for node in self.graph.graph_processor.get_targets() if node.id == target_node)
+                node = next(node for node in self.graph.get_targets() if node.id == target_node)
                 #print(f"Đối tượng Node với id {target_id} được tìm thấy.")
                 self.graph.nodes[target_node] = node
             except StopIteration:
@@ -225,8 +225,8 @@ class ReachingTargetEvent(Event):
         #pdb.set_trace()
         t1 = [self.earliness - self.end_time, 0, self.end_time - self.tardiness]
         
-        self.last_cost = self.graph.graph_processor.beta*(max(t1))/self.graph.graph_processor.alpha
-        if(self.graph.graph_processor.print_out):
+        self.last_cost = self.graph_processor.beta*(max(t1))/self.graph_processor.alpha
+        if(self.graph_processor.print_out):
             print(f"Last cost: {self.last_cost}")
         self.updateGraph()  # Optional: update the graph if necessary
         #print(self)
@@ -237,13 +237,13 @@ class ReachingTargetEvent(Event):
         if(self.agv.path[-1] != self.target_node):
             self.target_node = self.agv.path[-1]
             pdb.set_trace()
-        new_target_nodes = [node for node in self.graph.graph_processor.target_nodes if node.id != self.target_node]
-        if(len(new_target_nodes) != len(self.graph.graph_processor.target_nodes) - 1):
+        new_target_nodes = [node for node in self.graph.target_nodes if node.id != self.target_node]
+        if(len(new_target_nodes) != len(self.graph.target_nodes) - 1):
             pdb.set_trace()
-        self.graph.graph_processor.target_nodes = new_target_nodes
-        for source_id in self.graph.graph_processor.time_window_controller.TWEdges:
-            if(self.graph.graph_processor.time_window_controller.TWEdges[source_id] is not None):
-                edges = self.graph.graph_processor.time_window_controller.TWEdges[source_id]
+        self.graph.target_nodes = new_target_nodes
+        for source_id in self.graph.time_window_controller.TWEdges:
+            if(self.graph.time_window_controller.TWEdges[source_id] is not None):
+                edges = self.graph.time_window_controller.TWEdges[source_id]
                 indices = []
                 index = -1
                 for e in edges:
@@ -253,9 +253,9 @@ class ReachingTargetEvent(Event):
                             indices.append(index)
                 indices.reverse()
                 for index in indices:
-                    #if(index in self.graph.graph_processor.time_window_controller.TWEdges[source_id]):
+                    #if(index in self.graph.time_window_controller.TWEdges[source_id]):
                     #pdb.set_trace()
-                    del self.graph.graph_processor.time_window_controller.TWEdges[source_id][index]
+                    del self.graph.time_window_controller.TWEdges[source_id][index]
 
     def calculate_cost_reaching(self):
         # Retrieve the weight of the last edge traversed by the AGV
@@ -265,15 +265,15 @@ class ReachingTargetEvent(Event):
                 # Calculate cost based on the weight of the last edge
                 cost_increase = last_edge_weight
                 self.agv.update_cost(cost_increase)
-                if(self.graph.graph_processor.print_out):
+                if(self.graph_processor.print_out):
                     print(
                         f"Cost for reaching target node {self.target_node} is based on last edge weight: {cost_increase}."
                     )
             else:
-                if(self.graph.graph_processor.print_out):
+                if(self.graph_processor.print_out):
                     print("No last edge found; no cost added.")
         else:
-            if(self.graph.graph_processor.print_out):
+            if(self.graph_processor.print_out):
                 print("Previous node or target node not set; no cost calculated.")
         return self.agv.cost
 
@@ -283,7 +283,7 @@ class ReachingTargetEvent(Event):
         delta_cost = 0
         prev = 0
         M = self.graph.number_of_nodes_in_space_graph 
-        D = self.graph.graph_processor.d
+        D = self.graph.d
         P = len(path)
         for i in range(P):
             node = path[i]
@@ -291,7 +291,7 @@ class ReachingTargetEvent(Event):
             #pdb.set_trace()
             t2 = node // M - (1 if node % M == 0 else 0)
             t1 = prev // M - (1 if prev % M == 0 else 0)
-            delta_cost = self.graph.graph_processor.alpha*(t2 - t1)
+            delta_cost = self.graph_processor.alpha*(t2 - t1)
             if(i != P - 1):
                 #print('===', end='')
                 if(i > 0):
@@ -309,7 +309,7 @@ class ReachingTargetEvent(Event):
         real_dest = M if dest % M == 0 else dest % M
         print(f'Total cost: {cost}. The AGV reaches its destination: {real_dest} at {self.end_time} along with earliness = {self.earliness} and tardiness = {self.tardiness}')
     def process(self):
-        if(self.graph.graph_processor.print_out):
+        if(self.graph_processor.print_out):
             # Đây là phương thức để xử lý khi AGV đạt đến mục tiêu
             print(
                 f"AGV {self.agv.id} has reached the target node {self.target_node} at time {self.end_time}"
@@ -404,7 +404,7 @@ class StartEvent(Event):
 
     def process(self):
         #pdb.set_trace()
-        if(self.graph.graph_processor.print_out):
+        if(self.graph_processor.print_out):
             print(f"StartEvent processed at time {self.start_time} for {self.agv.id}. The AGV is currently at node {self.agv.current_node}.")
         self.getNext()
         

@@ -140,14 +140,15 @@ def assert_numberOf_RestrictionNodes(graph):
     
 
 processor = GraphProcessor()
+graph = Graph(processor)
 print("Test cho file 2ndSimple.txt")
 processor.print_out = False
 filepath = "2ndSimple.txt"
-processor.started_nodes = [1, 10]
+graph.started_nodes = [1, 10]
 processor.process_input_file(filepath)
 processor.H = 10
 processor.generate_hm_matrix()
-processor.d = 2
+graph.d = 2
 processor.generate_adj_matrix()
 processor.create_tsg_file()
 count = 0
@@ -167,17 +168,17 @@ processor.restrictions = [[2, 3]]
 processor.ur = 1
 processor.process_restrictions()
 
-graph = Graph(processor)
+
 #pdb.set_trace()
 processor.init_nodes_n_edges(graph)
 assert (graph.count_edges() == len(processor.tsedges)), "Missing some edges elsewhere"
-assert (len(graph.nodes) == len(processor.ts_nodes)), f"Missing some nodes elsewhere as {len(graph.nodes)} != {len(processor.ts_nodes)}"
+assert (len(graph.nodes) == len(graph.ts_nodes)), f"Missing some nodes elsewhere as {len(graph.nodes)} != {len(graph.ts_nodes)}"
 
 id1 = 1
 id2 = 8
 c12 = 3
 processor.update_graph(id1, id2, c12)
-current_time = id1 // processor.M + c12
+current_time = id1 // graph.M + c12
 #pdb.set_trace()
 
 """ Cần có các assert như sau:

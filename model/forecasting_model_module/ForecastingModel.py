@@ -145,15 +145,15 @@ class ForecastingModel:
         self.solve_time = None
         self.create_model()
         self.add_constraints()
-        self._graph = None
+        self._graph_processor = None
     
     @property
-    def graph(self):
-        return self._graph
+    def graph_processor(self):
+        return self._graph_processor
     
-    @graph.setter
-    def graph(self, value):
-        self._graph = value
+    @graph_processor.setter
+    def graph_processor(self, value):
+        self._graph_processor = value
     
 
     def create_model(self):
@@ -349,7 +349,7 @@ class ForecastingModel:
         if self.model.getStatus() == "optimal":
             tmp_traces = self.parse_variables_to_traces()
             
-            if self.graph.graph_processor.print_out:
+            if self.graph_processor.print_out:
                 self.print_traces_summary(tmp_traces)
 
             traces = self.sort_and_construct_traces(tmp_traces)
@@ -383,7 +383,7 @@ class ForecastingModel:
         for key in tmp_traces.keys():
             print(f"\t {key}: {tmp_traces[key]}", end='')
             last = tmp_traces[key][-1][0]
-            M = self.graph.graph_processor.M
+            M = self.graph.M
             real_last = last % M if last % M != 0 else M
             first = tmp_traces[key][0][0]
             if first in self.graph.nodes and self.graph.nodes[first].agv is not None:

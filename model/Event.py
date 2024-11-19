@@ -157,10 +157,10 @@ class Event:
         nx.read_dimac_file('TSG.txt')
         nx.edges_with_costs = {
             (int(edge[1]), int(edge[2])): [int(edge[4]), int(edge[5])]
-            for edge in self.graph.graph_processor.space_edges
+            for edge in self.graph.space_edges
             if edge[3] == '0' and int(edge[4]) >= 1
         }
-        nx.M = self.graph.graph_processor.M
+        nx.M = self.graph.M
         nx.write_trace()
 
     def finalize_solution(self):
@@ -194,7 +194,7 @@ class Event:
 
     def calculate_cost_event(self):
         # Increase cost by the actual time spent in holding
-        cost_increase = self.graph.graph_processor.alpha*(self.end_time - self.start_time)
+        cost_increase = self.graph_processor.alpha*(self.end_time - self.start_time)
         self.agv.cost += cost_increase
         return cost_increase
 
@@ -210,7 +210,7 @@ class Event:
         
         # Thiết lập traces cho AGV hiện tại
         temp_trace = self.graph.getTrace(self.agv)
-        target_node_ids = {node.id for node in self.graph.graph_processor.target_nodes}
+        target_node_ids = {node.id for node in self.graph.target_nodes}
         
         # Chỉ giữ lại các node hợp lệ trong trace của AGV
         if temp_trace:
@@ -246,7 +246,7 @@ class Event:
             target_node = agv.target_node
         
         if target_node and target_node.id in target_node_ids:
-            agv.target_node = self.graph.graph_processor.get_target_by_id(target_node.id)
+            agv.target_node = self.graph.get_target_by_id(target_node.id)
 
 def get_largest_id_from_map(filename):
     largest_id = 0

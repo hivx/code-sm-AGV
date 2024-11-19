@@ -60,6 +60,7 @@ y = {}
 config.count = 0
 logger = Logger()
 while(config.count < 2):
+    graph = Graph()
     #pdb.set_trace()
     config.count = config.count + 1
     if config.count > 1:
@@ -67,7 +68,7 @@ while(config.count < 2):
         dm.half_cleanup()
     choose_solver()
     choose_time_measurement()
-    graph_processor = GraphProcessor()
+    graph_processor = GraphProcessor(graph)
     start_time = time.time()
     graph_processor.use_in_main(config.count != 1)
     end_time = time.time()
@@ -77,10 +78,8 @@ while(config.count < 2):
     if(execution_time >= 5 and graph_processor.print_out):
         print(f"Thời gian thực thi: {execution_time} giây")
     
-    graph = Graph(graph_processor)  # Assuming a Graph class has appropriate methods to handle updates
-    
     events = []
-    Event.setValue("number_of_nodes_in_space_graph", graph_processor.M) #sẽ phải đọc file Edges.txt để biết giá trị cụ thể
+    Event.setValue("number_of_nodes_in_space_graph", graph.M) #sẽ phải đọc file Edges.txt để biết giá trị cụ thể
     Event.setValue("debug", 0)
     # Kiểm tra xem có tham số nào được truyền qua dòng lệnh không
     if len(sys.argv) > 1:

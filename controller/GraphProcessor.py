@@ -29,56 +29,27 @@ class bcolors:
     UNDERLINE = '\033[4m'
 
 class GraphProcessor:
-    def __init__(self):
+    def __init__(self, graph):
         self.adj = []  # Adjacency matrix
-        self.M = 0
         self.H = 0
-        self.d = 0
         self.alpha = 1
         self.beta = 1
         self.gamma = 1
         self.ID = []
         self.earliness = 0
         self.tardiness = 0
-        self.space_edges = []
         self.ts_edges = []
-        self.ts_nodes = []
         self.tsedges = []
-        self.started_nodes = []
-        self._target_nodes = []
         self.print_out = True
-        self.time_window_controller = None 
         self.restriction_controller = None
         self.start_ban = -1
         self.end_ban = -1
         self._seed = 0
         self.num_max_agvs = 0
-        self.graph = None
-        
-    @property
-    def target_nodes(self):
-        return self._target_nodes
-    
-    @target_nodes.setter
-    def target_nodes(self, value):
-        self._target_nodes = value
-    
-    def append_target(self, target_node):
-        if isinstance(target_node, TimeWindowNode):
-            #pdb.set_trace()
-            pass
-        self._target_nodes.append(target_node)
-        
-    def get_targets(self, index = -1):
-        if (index != -1):
-            return self._target_nodes[index]
-        return self._target_nodes
-    
-    def get_target_by_id(self, id):
-        for node in self._target_nodes:
-            if(node.id == id):
-                return node
-        return None
+        self.graph = graph
+  
+        # Tạo mối liên kết ngược
+        self.graph.graph_processor = self
     
     def getReal(self, start_id, next_id, agv):
         M = self.graph.number_of_nodes_in_space_graph
@@ -127,13 +98,13 @@ class GraphProcessor:
     def _get_min_moving_time(self, space_start_node, space_end_node):
         edges_with_cost = {
             (int(edge[1]), int(edge[2])): [int(edge[4]), int(edge[5])]
-            for edge in self.space_edges
+            for edge in self.graph.space_edges
             if edge[3] == '0' and int(edge[4]) >= 1
         }
         return edges_with_cost.get((space_start_node, space_end_node), [-1, -1])[1]
 
     def _is_target_node(self, next_id):
-        all_ids_of_target_nodes = [node.id for node in self.target_nodes]
+        all_ids_of_target_nodes = [node.id for node in self.graph.target_nodes]
         return next_id in all_ids_of_target_nodes
 
     def _update_agv_path(self, agv, node_id):
@@ -164,7 +135,7 @@ class GraphProcessor:
         return result
 
     def _handle_collisions(self, result, next_id, agv, M):
-        all_ids_of_target_nodes = [node.id for node in self.target_nodes]
+        all_ids_of_target_nodes = [node.id for node in self.graph.target_nodes]
         collision = True
         while collision:
             collision = False
@@ -255,9 +226,11 @@ class GraphProcessor:
     def insertEdgesAndNodes(self, start, end, edge):
         start_id = start if isinstance(start, int) else start.id
         end_id = end if isinstance(end, int) else end.id
+        self.graph.adjacency_list[start_id] = []
         self.graph.adjacency_list[start_id].append((end_id, edge))
         start_node = start if isinstance(start, Node) else self.find_node(start)
         end_node = end if isinstance(end, Node) else self.find_node(end)
+        self.graph.nodes[end_id] = []
         if self.graph.nodes[start_id] is None:
             self.graph.nodes[start_id] = start_node
         if self.graph.nodes[end_id] is None:
@@ -318,7 +291,7 @@ class GraphProcessor:
 
         self.process_adjacency_list(current_time, new_node_id, M)
         
-        q = self.update_new_started_nodes(new_node_id)
+        q = self.graph.update_new_started_nodes(new_node_id)
         new_edges = self.insert_from_queue(q, self.graph.adjacency_list)
         self.process_new_edges(new_edges)
 
@@ -331,7 +304,7 @@ class GraphProcessor:
     def process_adjacency_list(self, current_time, new_node_id, M):
         """Duyệt qua từng phần tử của adjacency_list và cập nhật thông tin."""
         for source_id, edges in list(self.graph.adjacency_list.items()):
-            isContinued = any(node.id == source_id for node in self.target_nodes)
+            isContinued = any(node.id == source_id for node in self.graph.target_nodes)
             if isContinued:
                 continue
 
@@ -355,8 +328,8 @@ class GraphProcessor:
         try:
             if new_source_id in self.graph.nodes:
                 self.graph.nodes[new_source_id].agv = self.graph.nodes[source_id].agv
-            index = self.started_nodes.index(source_id)
-            self.started_nodes[index] = new_source_id
+            index = self.graph.started_nodes.index(source_id)
+            self.graph.started_nodes[index] = new_source_id
         except ValueError:
             pass
         
@@ -402,16 +375,16 @@ class GraphProcessor:
         
         found = any(end_id == dest_id for end_id, _ in self.graph.adjacency_list[source_id])
         if not found:
-            anEdge = self.graph.nodes[source_id].create_edge(self.graph.nodes[dest_id], self.M, self.d, [source_id, dest_id, arr[2], arr[3], arr[4]])
+            anEdge = self.graph.nodes[source_id].create_edge(self.graph.nodes[dest_id], self.graph.M, self.graph.d, [source_id, dest_id, arr[2], arr[3], arr[4]])
             self.graph.adjacency_list[source_id].append([dest_id, anEdge])
         
         # Add TimeWindowEdge and RestrictionEdge
-        self.time_window_controller.generate_time_window_edges(self.graph.nodes[source_id], self.graph.adjacency_list, self.graph.number_of_nodes_in_space_graph)
+        self.graph.time_window_controller.generate_time_window_edges(self.graph.nodes[source_id], self.graph.adjacency_list, self.graph.number_of_nodes_in_space_graph)
         self.restriction_controller.generate_restriction_edges(self.graph.nodes[source_id], self.graph.nodes[dest_id], self.graph.nodes, self.graph.adjacency_list)
 
     def version_check(self, current_time):
         """Kiểm tra nếu phiên bản cần được cập nhật."""
-        time2 = self.graph.number_of_nodes_in_space_graph // self.M - (1 if self.graph.number_of_nodes_in_space_graph % self.M == 0 else 0)
+        time2 = self.graph.number_of_nodes_in_space_graph // self.graph.M - (1 if self.graph.number_of_nodes_in_space_graph % self.graph.M == 0 else 0)
         return time2 != current_time
 
     def collect_new_halting_edges(self):
@@ -422,10 +395,10 @@ class GraphProcessor:
 
         for source_id, edges in sorted_edges:
             for edge in edges:
-                t = edge[0] // self.M - (1 if edge[0] % self.M == 0 else 0)
+                t = edge[0] // self.graph.M - (1 if edge[0] % self.graph.M == 0 else 0)
                 if t >= self.H and edge[0] not in new_nodes and isinstance(self.graph.nodes[edge[0]], TimeoutNode):
                     new_nodes.add(edge[0])
-                    for target in self.get_targets():
+                    for target in self.graph.get_targets():
                         dest_id = target.id
                         new_halting_edges.append([edge[0], dest_id, 0, 1, self.H * self.H])
 
@@ -483,19 +456,19 @@ class GraphProcessor:
                 print(f"Updated weight of edge {end_node} to {adj_node} to {new_weight} due to changes at {start_node}.")
  
     def process_input_file(self, filepath):
-        self.space_edges = []
+        self.graph.space_edges = []
         try:
             with open(filepath, 'r') as file:
-                self.M = 0
+                self.graph.M = 0
                 for line in file:
                     parts = line.strip().split()
                     if parts[0] == 'a' and len(parts) >= 6:
                         id1, id2 = int(parts[1]), int(parts[2])
-                        self.space_edges.append(parts)
-                        self.M = max(self.M, id1, id2)
+                        self.graph.space_edges.append(parts)
+                        self.graph.M = max(self.graph.M, id1, id2)
                     elif parts[0] == 'n':
                         if(parts[2] == '1'):
-                            self.started_nodes.append(int(parts[1]))
+                            self.graph.started_nodes.append(int(parts[1]))
                         if(parts[2] == '-1'):
                             self.ID.append(int(parts[1]))
                             if isinstance(self.earliness, int):
@@ -509,7 +482,7 @@ class GraphProcessor:
                     elif parts[0] == 'beta':
                         self.beta = int(parts[1])
             if(self.print_out):
-                print("Doc file hoan tat, M =", self.M)
+                print("Doc file hoan tat, M =", self.graph.M)
         except FileNotFoundError:
             if(self.print_out):
                 print("File khong ton tai!")
@@ -519,8 +492,8 @@ class GraphProcessor:
         _id = int(_id)
         # Tìm kiếm đối tượng Node có ID tương ứng
         if not hasattr(self, 'map_nodes'):
-            # Nếu chưa tồn tại, chuyển self.ts_nodes thành self.map_nodes
-            self.map_nodes = {node.id: node for node in self.ts_nodes}
+            # Nếu chưa tồn tại, chuyển self.graph.ts_nodes thành self.map_nodes
+            self.map_nodes = {node.id: node for node in self.graph.ts_nodes}
         # Tìm kiếm trên self.map_nodes
         if _id in self.map_nodes:
             return self.map_nodes[_id]
@@ -528,37 +501,37 @@ class GraphProcessor:
             # Nếu không có trên map_nodes, thêm vào cả ts_nodes và map_nodes
             #if(id == 26272):
             #    pdb.set_trace()
-            for node in self._target_nodes:
+            for node in self.graph._target_nodes:
                 if(node.id == _id):
                     self.map_nodes[_id] = node
                     return node
-            time = _id // self.M - (1 if _id % self.M == 0 else 0)
+            time = _id // self.graph.M - (1 if _id % self.graph.M == 0 else 0)
             new_node = None
             if(time >= self.H):
                 new_node = TimeoutNode(_id, "TimeOut")
             else:
                 new_node = Node(_id)
-            self.ts_nodes.append(new_node)
+            self.graph.ts_nodes.append(new_node)
             self.map_nodes[_id] = new_node
             
             return new_node
 	
     def generate_hm_matrix(self):
-        self.matrix = [[j + 1 + self.M * i for j in range(self.M)] for i in range(self.H)]
+        self.matrix = [[j + 1 + self.graph.M * i for j in range(self.graph.M)] for i in range(self.H)]
         if(self.print_out):
             print("Hoan tat khoi tao matrix HM!")
         #     print(' '.join(map(str, row)))
 
     def generate_adj_matrix(self):
-        size = (self.H + 1) * self.M + 1
+        size = (self.H + 1) * self.graph.M + 1
         self.adj = lil_matrix((2*size, 2*size), dtype=int)
 
-        for edge in self.space_edges:
+        for edge in self.graph.space_edges:
             if len(edge) >= 6 and edge[3] == '0' and int(edge[4]) >= 1:
                 u, v, c = int(edge[1]), int(edge[2]), int(edge[5])
                 for i in range(self.H + 1):
-                    source_idx = i * self.M + u
-                    target_idx = (i + c) * self.M + v
+                    source_idx = i * self.graph.M + u
+                    target_idx = (i + c) * self.graph.M + v
                     if(self.print_out):
                         print(f"i = {i} {source_idx} {target_idx} = 1")
 
@@ -566,8 +539,8 @@ class GraphProcessor:
                         self.adj[source_idx, target_idx] = 1
                         
         for i in range(size):
-            j = i + self.M * self.d
-            if j < size and (i % self.M == j % self.M):
+            j = i + self.graph.M * self.graph.d
+            if j < size and (i % self.graph.M == j % self.graph.M):
                 self.adj[i, j] = 1
 
         if(self.print_out):
@@ -582,19 +555,19 @@ class GraphProcessor:
 
     def check_and_add_nodes(self, args, is_artificial_node = False, label = ""):
         if not hasattr(self, 'map_nodes'):
-            # Nếu chưa tồn tại, chuyển self.ts_nodes thành self.map_nodes
-            self.map_nodes = {node.id: node for node in self.ts_nodes}
+            # Nếu chưa tồn tại, chuyển self.graph.ts_nodes thành self.map_nodes
+            self.map_nodes = {node.id: node for node in self.graph.ts_nodes}
         for id in args:
             # Ensure that Node objects for id exist in ts_nodes
-            if not any(node.id == id for node in self.ts_nodes) and isinstance(id, int):
+            if not any(node.id == id for node in self.graph.ts_nodes) and isinstance(id, int):
                 if(is_artificial_node):
                    if(label == "TimeWindow"):
                        temp = TimeWindowNode(id, label)
-                       self.ts_nodes.append(temp)
+                       self.graph.ts_nodes.append(temp)
                        self.map_nodes[id] = temp
                    elif(label == "Restriction"):
                        temp = RestrictionNode(id, label)
-                       self.ts_nodes.append(temp)
+                       self.graph.ts_nodes.append(temp)
                        self.map_nodes[id] = temp
                    elif (label == "Timeout"):
                        temp = TimeoutNode(id, label)
@@ -602,18 +575,17 @@ class GraphProcessor:
                        self.map_nodes[id] = temp
                    else:
                        temp = ArtificialNode(id, label)
-                       self.ts_nodes.append(temp)
+                       self.graph.ts_nodes.append(temp)
                        self.map_nodes[id] = temp
                 else:
-                    time = id // self.M - (1 if id % self.M == 0 else 0)
+                    time = id // self.graph.M - (1 if id % self.graph.M == 0 else 0)
                     temp = None
                     if(time >= self.H):
                         temp = TimeoutNode(id, "Timeout")
                     else:
                         temp = Node(id)
-                    self.ts_nodes.append(temp)
+                    self.graph.ts_nodes.append(temp)
                     self.map_nodes[id] = temp
-        #    self.ts_nodes.append(Node(ID2))
 
     def show(self, q):
         if len(q) < 10:
@@ -650,7 +622,7 @@ class GraphProcessor:
     def extract_edges_with_cost(self):
         """Trích xuất các cạnh có chi phí từ danh sách cạnh không gian."""
         return {(int(edge[1]), int(edge[2])): [int(edge[4]), int(edge[5])] 
-                for edge in self.space_edges if edge[3] == '0' and int(edge[4]) >= 1}
+                for edge in self.graph.space_edges if edge[3] == '0' and int(edge[4]) >= 1}
 
     def get_ts_edges(self, checking_list):
         """Lấy danh sách các cạnh tạm thời."""
@@ -677,24 +649,24 @@ class GraphProcessor:
         
         if self.should_add_edge(cost_info, ID, j, v):
             self.create_edge_output(output_lines, ID, j, cost_info, checking_list)
-        elif ID + self.M * self.d == j and ID % self.M == j % self.M:
+        elif ID + self.graph.M * self.graph.d == j and ID % self.graph.M == j % self.graph.M:
             self.create_holding_edge_output(output_lines, ID, j, checking_list)
 
     def get_node_coordinates(self, ID, j):
         """Lấy tọa độ nút từ ID."""
-        u = ID % self.M if ID % self.M != 0 or ID == 0 else self.M
-        v = j % self.M if j % self.M != 0 or j == 0 else self.M
+        u = ID % self.graph.M if ID % self.graph.M != 0 or ID == 0 else self.graph.M
+        v = j % self.graph.M if j % self.graph.M != 0 or j == 0 else self.graph.M
         return u, v
 
     def should_add_edge(self, cost_info, ID, j, v):
         """Kiểm tra điều kiện để thêm cạnh."""
         upper, cost = cost_info
-        return ((ID // self.M) + cost >= (j // self.M) - (v // self.M)) and (upper != -1)
+        return ((ID // self.graph.M) + cost >= (j // self.graph.M) - (v // self.graph.M)) and (upper != -1)
 
     def create_edge_output(self, output_lines, ID, j, cost_info, checking_list):
         """Tạo dòng output cho cạnh mới và thêm vào danh sách."""
         upper, cost = cost_info
-        if ID // self.M >= self.H:
+        if ID // self.graph.M >= self.H:
             output_lines.append(f"a {ID} {j} 0 1 {cost} Exceed")
         else:
             output_lines.append(f"a {ID} {j} 0 {upper} {cost}")
@@ -703,19 +675,19 @@ class GraphProcessor:
             self.ts_edges.append((ID, j, 0, upper, cost))
         
         self.check_and_add_nodes([ID, j])
-        edge = self.find_node(ID).create_edge(self.find_node(j), self.M, self.d, [ID, j, 0, upper, cost])
+        edge = self.find_node(ID).create_edge(self.find_node(j), self.graph.M, self.graph.d, [ID, j, 0, upper, cost])
         if checking_list is None:
             self.tsedges.append(edge)
 
     def create_holding_edge_output(self, output_lines, ID, j, checking_list):
         """Tạo dòng output cho cạnh holding và thêm vào danh sách."""
-        output_lines.append(f"a {ID} {j} 0 1 {self.d}")
+        output_lines.append(f"a {ID} {j} 0 1 {self.graph.d}")
         
         if checking_list is None:
-            self.ts_edges.append((ID, j, 0, 1, self.d))
+            self.ts_edges.append((ID, j, 0, 1, self.graph.d))
         
         self.check_and_add_nodes([ID, j])
-        edge = self.find_node(ID).create_edge(self.find_node(j), self.M, self.d, [ID, j, 0, 1, self.d])
+        edge = self.find_node(ID).create_edge(self.find_node(j), self.graph.M, self.graph.d, [ID, j, 0, 1, self.graph.d])
         if checking_list is None:
             self.tsedges.append(edge)
 
@@ -726,7 +698,7 @@ class GraphProcessor:
     def create_tsg_file(self):          
         #pdb.set_trace()
         q = deque()
-        q.extend(self.started_nodes)
+        q.extend(self.graph.started_nodes)
 
         #pdb.set_trace()
         output_lines = self.insert_from_queue(q)
@@ -739,18 +711,18 @@ class GraphProcessor:
     def init_agvs_n_events(self, all_agvs, events, graph, graph_processor):
         from controller.EventGenerator import StartEvent
         from model.AGV import AGV
-        for node_id in self.started_nodes:
+        for node_id in self.graph.started_nodes:
             #pdb.set_trace()
-            agv = AGV("AGV" + str(node_id), node_id, graph)  # Create an AGV at this node
+            agv = AGV("AGV" + str(node_id), node_id, graph, graph_processor)  # Create an AGV at this node
             #print(Event.getValue("number_of_nodes_in_space_graph"))
-            start_time = node_id // self.M
+            start_time = node_id // self.graph.M
             end_time = start_time
             start_event = StartEvent(start_time, end_time, agv, graph, graph_processor)  # Start event at time 0
             events.append(start_event)
             all_agvs.add(agv)  # Thêm vào tập hợp AGV
     
     def init_tasks(self, tasks):
-        for node_id in self.get_targets():
+        for node_id in self.graph.get_targets():
             tasks.add(node_id)
     
     def query_edges_by_source_id(self):
@@ -804,8 +776,8 @@ class GraphProcessor:
                     else:
                         seen_edges.add((ID1, ID2))
 
-                    # Condition 3: ID2/self.M should be greater than ID1/self.M
-                    if ID2 // self.M <= ID1 // self.M:
+                    # Condition 3: ID2/self.graph.M should be greater than ID1/self.graph.M
+                    if ID2 // self.graph.M <= ID1 // self.graph.M:
                         print("False")
                         return
 
@@ -836,10 +808,10 @@ class GraphProcessor:
 
     def adjust_id2_if_needed(self, ID1, ID2, C12):
         """Điều chỉnh ID2 nếu i2 - i1 không bằng C12."""
-        i1, i2 = ID1 // self.M, ID2 // self.M
+        i1, i2 = ID1 // self.graph.M, ID2 // self.graph.M
         if i2 - i1 != C12:
             print('Status: i2 - i1 != C12')
-            ID2 = ID1 + self.M * C12
+            ID2 = ID1 + self.graph.M * C12
         return ID2
 
     def load_existing_edges(self):
@@ -866,8 +838,8 @@ class GraphProcessor:
             ID = q.popleft()
             for j in self.adj.rows[ID]:
                 if j not in visited:
-                    c = self.d if ID + self.M * self.d == j and ID % self.M == j % self.M else C12
-                    if (ID // self.M) + c == j // self.M:
+                    c = self.graph.d if ID + self.graph.M * self.graph.d == j and ID % self.graph.M == j % self.graph.M else C12
+                    if (ID // self.graph.M) + c == j // self.graph.M:
                         new_edges.append((ID, j, c))
                         q.append(j)
                         visited.add(j)
@@ -877,11 +849,11 @@ class GraphProcessor:
     def append_edges_to_file(self, new_edges):
         """Thêm các cạnh mới vào file TSG.txt."""
         edges_with_cost = { (int(edge[1]), int(edge[2])): [int(edge[4]), int(edge[5])] 
-                            for edge in self.space_edges if edge[3] == '0' and int(edge[4]) >= 1 }
+                            for edge in self.graph.space_edges if edge[3] == '0' and int(edge[4]) >= 1 }
 
         with open('TSG.txt', 'a') as file:
             for ID, j, c in new_edges:
-                u, v = ID % self.M + (self.M if ID % self.M == 0 else 0), j % self.M + (self.M if j % self.M == 0 else 0)
+                u, v = ID % self.graph.M + (self.graph.M if ID % self.graph.M == 0 else 0), j % self.graph.M + (self.graph.M if j % self.graph.M == 0 else 0)
                 [upper, _] = edges_with_cost[(u, v)]
                 file.write(f"a {ID} {j} 0 {upper} {c}\n")
         print("Da cap nhat file TSG.txt.")
@@ -910,7 +882,7 @@ class GraphProcessor:
     def create_set_of_edges(self, edges):
         for e in edges:
             #self.tsedges.append(ArtificialEdge(self.find_node(e[0]), self.find_node(e[1]), e[4]))
-            temp = self.find_node(e[0]).create_edge(self.find_node(e[1]), self.M, self.d, e)
+            temp = self.find_node(e[0]).create_edge(self.find_node(e[1]), self.graph.M, self.graph.d, e)
             self.tsedges.append(temp)
         
     def process_restrictions(self):
@@ -935,15 +907,15 @@ class GraphProcessor:
     def get_edges_with_cost(self):
         """Trả về một từ điển các cạnh với chi phí."""
         return {(int(edge[1]), int(edge[2])): int(edge[5])
-                for edge in self.space_edges if edge[3] == '0' and int(edge[4]) >= 1}
+                for edge in self.graph.space_edges if edge[3] == '0' and int(edge[4]) >= 1}
 
     def create_restricted_edges(self, restriction, edges_with_cost, maxid):
         """Tạo các cạnh bị cấm dựa trên hạn chế và chi phí."""
         R = []
         for time in range(self.start_ban, self.end_ban + 1):
-            time_space_point_0 = time * self.M + restriction[0]
+            time_space_point_0 = time * self.graph.M + restriction[0]
             cost = edges_with_cost.get((restriction[0], restriction[1]), -1)
-            time_space_point_1 = (time + cost) * self.M + restriction[1]
+            time_space_point_1 = (time + cost) * self.graph.M + restriction[1]
             
             R.append([time_space_point_0, time_space_point_1, cost])
             self.adj[time_space_point_0, time_space_point_1] = 0
@@ -990,11 +962,11 @@ class GraphProcessor:
         for edge in self.tsedges:
             if(isinstance(edge.end_node, TimeWindowNode)):
                 continue
-            time = edge.end_node.id // self.M - (1 if edge.end_node.id % self.M == 0 else 0)
+            time = edge.end_node.id // self.graph.M - (1 if edge.end_node.id % self.graph.M == 0 else 0)
             #    pdb.set_trace()
             if(time >= self.H):
                 halting_nodes.add(edge.end_node.id)
-        targets = self.get_targets()
+        targets = self.graph.get_targets()
         new_a = set()
         for h_node in halting_nodes:
             for target in targets:
@@ -1004,12 +976,12 @@ class GraphProcessor:
         self.create_set_of_edges(new_a)
     
     def write_to_file(self):
-        M = max(target.id for target in self.get_targets())
+        M = max(target.id for target in self.graph.get_targets())
         with open('TSG.txt', 'w') as file:
             file.write(f"p min {M} {len(self.ts_edges)}\n")
-            for start in self.started_nodes:
+            for start in self.graph.started_nodes:
                 file.write(f"n {start} 1\n")
-            for target in self.get_targets():
+            for target in self.graph.get_targets():
                 target_id = target.id
                 file.write(f"n {target_id} -1\n")
             #for edge in self.ts_edges:
@@ -1017,7 +989,7 @@ class GraphProcessor:
                 if (edge is not None):   
                     if(edge.weight == self.H*self.H):
                         #pdb.set_trace()
-                        file.write(f"c Exceed {edge.weight} {edge.weight // self.M}\na {edge.start_node.id} {edge.end_node.id} {edge.lower} {edge.upper} {edge.weight}\n")
+                        file.write(f"c Exceed {edge.weight} {edge.weight // self.graph.M}\na {edge.start_node.id} {edge.end_node.id} {edge.lower} {edge.upper} {edge.weight}\n")
                     else:
                         file.write(f"a {edge.start_node.id} {edge.end_node.id} {edge.lower} {edge.upper} {edge.weight}\n")
         if(self.print_out):
@@ -1025,11 +997,11 @@ class GraphProcessor:
         
     def get_started_points(self):
         N = int(input("Nhập vào số lượng các xe AGV: "))
-        self.started_nodes = []
+        self.graph.started_nodes = []
         for i in range(1, N+1):
             p, t = map(int, input(f"Xe {i} xuất phát ở đâu và khi nào (nhập p t)?: ").split())
-            p = t*self.M + p
-            self.started_nodes.append(p)
+            p = t*self.graph.M + p
+            self.graph.started_nodes.append(p)
 
     def get_max_id(self):
       max_val = 0
@@ -1065,8 +1037,8 @@ class GraphProcessor:
         max_val = self.get_max_id() + 1
         target_node = self.create_time_window_node(max_val)
 
-        if self.time_window_controller is None:
-            self.time_window_controller = TimeWindowController(self.alpha, self.beta, self.gamma, self.d, self.H)
+        if self.graph.time_window_controller is None:
+            self.graph.time_window_controller = TimeWindowController(self.alpha, self.beta, self.gamma, self.graph.d, self.H)
 
         ID, earliness, tardiness = self.get_initial_conditions(target_node)
         new_edges = self.process_tsg_file(target_node, ID, earliness, tardiness)
@@ -1078,8 +1050,8 @@ class GraphProcessor:
 
     def create_time_window_node(self, max_val):
         target_node = TimeWindowNode(max_val, "TimeWindow")
-        self.ts_nodes.append(target_node)
-        self.append_target(target_node)
+        self.graph.ts_nodes.append(target_node)
+        self.graph.append_target(target_node)
         return target_node
 
     def get_initial_conditions(self, target_node):
@@ -1095,7 +1067,7 @@ class GraphProcessor:
             earliness = self.earliness
             tardiness = self.tardiness
 
-        self.time_window_controller.add_source_and_TWNode(ID, target_node, earliness, tardiness)
+        self.graph.time_window_controller.add_source_and_TWNode(ID, target_node, earliness, tardiness)
         return ID, earliness, tardiness
 
     def process_tsg_file(self, target_node, ID, earliness, tardiness):
@@ -1116,18 +1088,18 @@ class GraphProcessor:
 
     def process_line(self, ID, ID2, earliness, tardiness, new_edges, target_node):
         for i in range(1, self.H + 1):
-            j = i * self.M + ID
+            j = i * self.graph.M + ID
             if j == ID2:
                 C = int(int(self.beta) * max(earliness - i, 0, i - tardiness) / int(self.alpha))
                 new_edges.add((j, target_node.id, 0, 1, C))
-                self.find_node(j).create_edge(target_node, self.M, self.d, [j, target_node.id, 0, 1, C])
+                self.find_node(j).create_edge(target_node, self.graph.M, self.graph.d, [j, target_node.id, 0, 1, C])
                 break
 
-        t = ID2 // self.M - (1 if ID2 % self.M == 0 else 0)
+        t = ID2 // self.graph.M - (1 if ID2 % self.graph.M == 0 else 0)
         if t > self.H:
             C = self.H * self.H
             new_edges.add((j, target_node.id, 0, 1, C))
-            self.find_node(j).create_edge(target_node, self.M, self.d, [j, target_node.id, 0, 1, C])
+            self.find_node(j).create_edge(target_node, self.graph.M, self.graph.d, [j, target_node.id, 0, 1, C])
 
     def update_edges(self, new_edges):
         self.ts_edges.extend(e for e in new_edges if e not in self.ts_edges)
@@ -1155,7 +1127,7 @@ class GraphProcessor:
                         ID1, ID2 = int(parts[1]), int(parts[2])
 
                         # Kiểm tra điều kiện ID1 và ID2
-                        if ID1 >= T * self.M and ID2 >= T * self.M:
+                        if ID1 >= T * self.graph.M and ID2 >= T * self.graph.M:
                             new_lines.append(line)
         except FileNotFoundError:
             print("Không tìm thấy file TSG.txt.")
@@ -1194,7 +1166,7 @@ class GraphProcessor:
               for item in itinerary_start:
                   time_values = item["time"]
                   for time_value in time_values:
-                      point_id = item["point"] + self.M * time_value
+                      point_id = item["point"] + self.graph.M * time_value
                       itinerary_lines.append(f"n {point_id} 1\n")
               for item in itinerary_end:
                   point_id = item["point"][0]
@@ -1440,7 +1412,7 @@ class GraphProcessor:
      
     def generate_poisson_random(self, M = None):
         if M is None:
-            M = self.M
+            M = self.graph.M
         if M <= 2 and M >= 1:
             return M
         while True:
@@ -1459,7 +1431,7 @@ class GraphProcessor:
             if filepath == '':
                 filepath = 'Redundant3x3Wards.txt'
             config.filepath = filepath
-        self.started_nodes = [] #[1, 10]
+        self.graph.started_nodes = [] #[1, 10]
 
         self.process_input_file(filepath)
         if(use_config_data):
@@ -1474,14 +1446,14 @@ class GraphProcessor:
 
         self.generate_hm_matrix()
         if(use_config_data):
-            self.d = config.d
+            self.graph.d = config.d
         else:
-            self.d = input("Nhap time unit (default: 1): ")
-            if(self.d == ''):
-                self.d = 1
+            self.graph.d = input("Nhap time unit (default: 1): ")
+            if(self.graph.d == ''):
+                self.graph.d = 1
             else:
-                self.d = int(self.d)
-            config.d = self.d
+                self.graph.d = int(self.graph.d)
+            config.d = self.graph.d
         
         self.generate_adj_matrix()
         
@@ -1491,7 +1463,7 @@ class GraphProcessor:
             self.ID = config.ID
             self.earliness = config.earliness
             self.tardiness = config.tardiness
-            self.started_nodes = config.started_nodes
+            self.graph.started_nodes = config.started_nodes
             num_of_agvs = config.numOfAGVs
         else:
             self.num_max_agvs = input("Nhap so luong AGV toi da di chuyen trong toan moi truong (default: 4):")
@@ -1502,19 +1474,19 @@ class GraphProcessor:
             num_of_agvs = self.num_max_agvs
             config.num_max_agvs = self.num_max_agvs
             config.numOfAGVs = num_of_agvs
-            if len(self.started_nodes) == 0:
+            if len(self.graph.started_nodes) == 0:
                 self.ID = []
                 self.earliness = []
                 self.tardiness = []
                 #pdb.set_trace()
                 for _ in range(num_of_agvs):
-                    [s, d, e, t] = self.generate_numbers_student(self.M, self.H, 12, 100)
-                    self.started_nodes.append(s)
+                    [s, d, e, t] = self.generate_numbers_student(self.graph.M, self.H, 12, 100)
+                    self.graph.started_nodes.append(s)
                     self.ID.append(d)
                     self.earliness.append(e)
                     self.tardiness.append(t)
-                print(f'Start: {self.started_nodes} \n End: {self.ID} \n Earliness: {self.earliness} \n Tardiness: {self.tardiness}')
-                config.started_nodes = self.started_nodes.copy()
+                print(f'Start: {self.graph.started_nodes} \n End: {self.ID} \n Earliness: {self.earliness} \n Tardiness: {self.tardiness}')
+                config.started_nodes = self.graph.started_nodes.copy()
                 config.ID = self.ID.copy()
                 config.earliness = self.earliness.copy()
                 config.tardiness = self.tardiness.copy()
@@ -1538,7 +1510,7 @@ class GraphProcessor:
         self.gamma = 1
         self.restriction_count = 1
         self.start_ban = 0
-        self.end_ban = 2*self.d
+        self.end_ban = 2*self.graph.d
         self.restrictions = []
         self.ur = 3
         #pdb.set_trace()
@@ -1588,7 +1560,7 @@ class GraphProcessor:
                 self.H = int(input("Nhap vao gia tri H: "))
                 self.generate_hm_matrix()
             elif choice == 'c':
-                self.d = int(input("Nhap vao gia tri d: "))
+                self.graph.d = int(input("Nhap vao gia tri d: "))
                 self.generate_adj_matrix()
             elif choice == 'd':
                 self.create_tsg_file()
