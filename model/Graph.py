@@ -23,26 +23,153 @@ class bcolors:
     
 class Graph:
     def __init__(self, graph_processor):
-        self.graph_processor = graph_processor 
-        self.adjacency_list = defaultdict(list)
-        self.nodes = {node.id: node for node in graph_processor.ts_nodes}
-        self.adjacency_list = {node.id: [] for node in graph_processor.ts_nodes}
-        self.list1 = []
-        self.neighbour_list = {}
-        self.visited = set()
-        self.version = -1
-        self.file_path = None
-        self.cur = []
-        self.map = {}
-        self.number_of_nodes_in_space_graph = -1 if graph_processor is None else graph_processor.M
-        self.calling = 0
-        self.continue_debugging = True
-        self.history = []
+        self._graph_processor = graph_processor
+        self._adjacency_list = defaultdict(list)
+        self._nodes = {node.id: node for node in graph_processor.ts_nodes} if graph_processor else {}
+        self._adjacency_list = {node.id: [] for node in graph_processor.ts_nodes} if graph_processor else {}
+        self._list1 = []
+        self._neighbour_list = {}
+        self._visited = set()
+        self._version = -1
+        self._file_path = None
+        self._cur = []
+        self._map = {}
+        self._number_of_nodes_in_space_graph = -1 if graph_processor is None else graph_processor.M
+        self._calling = 0
+        self._continue_debugging = True
+        self._history = []
         if graph_processor is not None:
             graph_processor.graph = self
             
-#=======================================================================================================
+#==========================================================================================
 
+    # Getter và setter cho graph_processor
+    @property
+    def graph_processor(self):
+        return self._graph_processor
+
+    @graph_processor.setter
+    def graph_processor(self, value):
+        self._graph_processor = value
+
+    # Getter và setter cho adjacency_list
+    @property
+    def adjacency_list(self):
+        return self._adjacency_list
+
+    @adjacency_list.setter
+    def adjacency_list(self, value):
+        self._adjacency_list = value
+
+    # Getter và setter cho nodes
+    @property
+    def nodes(self):
+        return self._nodes
+
+    @nodes.setter
+    def nodes(self, value):
+        self._nodes = value
+
+    # Getter và setter cho list1
+    @property
+    def list1(self):
+        return self._list1
+
+    @list1.setter
+    def list1(self, value):
+        self._list1 = value
+
+    # Getter và setter cho neighbour_list
+    @property
+    def neighbour_list(self):
+        return self._neighbour_list
+
+    @neighbour_list.setter
+    def neighbour_list(self, value):
+        self._neighbour_list = value
+
+    # Getter và setter cho visited
+    @property
+    def visited(self):
+        return self._visited
+
+    @visited.setter
+    def visited(self, value):
+        self._visited = value
+
+    # Getter và setter cho version
+    @property
+    def version(self):
+        return self._version
+
+    @version.setter
+    def version(self, value):
+        self._version = value
+
+    # Getter và setter cho file_path
+    @property
+    def file_path(self):
+        return self._file_path
+
+    @file_path.setter
+    def file_path(self, value):
+        self._file_path = value
+
+    # Getter và setter cho cur
+    @property
+    def cur(self):
+        return self._cur
+
+    @cur.setter
+    def cur(self, value):
+        self._cur = value
+
+    # Getter và setter cho map
+    @property
+    def map(self):
+        return self._map
+
+    @map.setter
+    def map(self, value):
+        self._map = value
+
+    # Getter và setter cho number_of_nodes_in_space_graph
+    @property
+    def number_of_nodes_in_space_graph(self):
+        return self._number_of_nodes_in_space_graph
+
+    @number_of_nodes_in_space_graph.setter
+    def number_of_nodes_in_space_graph(self, value):
+        self._number_of_nodes_in_space_graph = value
+
+    # Getter và setter cho calling
+    @property
+    def calling(self):
+        return self._calling
+
+    @calling.setter
+    def calling(self, value):
+        self._calling = value
+
+    # Getter và setter cho continue_debugging
+    @property
+    def continue_debugging(self):
+        return self._continue_debugging
+
+    @continue_debugging.setter
+    def continue_debugging(self, value):
+        self._continue_debugging = value
+
+    # Getter và setter cho history
+    @property
+    def history(self):
+        return self._history
+
+    @history.setter
+    def history(self, value):
+        self._history = value
+
+#==========================================================================================
     def count_edges(self):
         count = 0
         for node in self.adjacency_list:

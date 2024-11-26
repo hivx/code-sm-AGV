@@ -30,31 +30,105 @@ class bcolors:
 
 class GraphProcessor:
     def __init__(self):
-        self.adj = []  # Adjacency matrix
-        self.M = 0
-        self.H = 0
-        self.d = 0
-        self.alpha = 1
-        self.beta = 1
-        self.gamma = 1
-        self.ID = []
-        self.earliness = 0
-        self.tardiness = 0
-        self.space_edges = []
-        self.ts_edges = []
-        self.ts_nodes = []
-        self.tsedges = []
-        self.started_nodes = []
+        self._adj = []  # Adjacency matrix
+        self._M = 0
+        self._H = 0
+        self._d = 0
+        self._alpha = 1
+        self._beta = 1
+        self._gamma = 1
+        self._ID = []
+        self._earliness = 0
         self._target_nodes = []
-        self.print_out = True
-        self.time_window_controller = None 
-        self.restriction_controller = None
-        self.start_ban = -1
-        self.end_ban = -1
+        self._tardiness = 0
+        self._space_edges = []
+        self._ts_edges = []
+        self._ts_nodes = []
+        self._tsedges = []
+        self._started_nodes = []
+        self._print_out = True
+        self._time_window_controller = None
+        self._restriction_controller = None
+        self._start_ban = -1
+        self._end_ban = -1
         self._seed = 0
-        self.num_max_agvs = 0
-        self.graph = None
-        
+        self._num_max_agvs = 0
+        self._graph = None
+
+#===============================================================================
+
+    # Getter and Setter for adj
+    @property
+    def adj(self):
+        return self._adj
+
+    @adj.setter
+    def adj(self, value):
+        self._adj = value
+
+    # Getter and Setter for H
+    @property
+    def H(self):
+        return self._H
+
+    @H.setter
+    def H(self, value):
+        self._H = value
+
+    # Getter and Setter for d
+    @property
+    def d(self):
+        return self._d
+
+    @d.setter
+    def d(self, value):
+        self._d = value
+
+    # Getter and Setter for alpha
+    @property
+    def alpha(self):
+        return self._alpha
+
+    @alpha.setter
+    def alpha(self, value):
+        self._alpha = value
+
+    # Getter and Setter for beta
+    @property
+    def beta(self):
+        return self._beta
+
+    @beta.setter
+    def beta(self, value):
+        self._beta = value
+
+    # Getter and Setter for gamma
+    @property
+    def gamma(self):
+        return self._gamma
+
+    @gamma.setter
+    def gamma(self, value):
+        self._gamma = value
+
+    # Getter and Setter for ID
+    @property
+    def ID(self):
+        return self._ID
+
+    @ID.setter
+    def ID(self, value):
+        self._ID = value
+
+    # Getter and Setter for earliness
+    @property
+    def earliness(self):
+        return self._earliness
+
+    @earliness.setter
+    def earliness(self, value):
+        self._earliness = value    
+    
     @property
     def target_nodes(self):
         return self._target_nodes
@@ -62,6 +136,150 @@ class GraphProcessor:
     @target_nodes.setter
     def target_nodes(self, value):
         self._target_nodes = value
+        
+    # Getter and Setter for tardiness
+    @property
+    def tardiness(self):
+        return self._tardiness
+
+    @tardiness.setter
+    def tardiness(self, value):
+        self._tardiness = value
+
+    # Getter và Setter cho space_edges
+    @property
+    def space_edges(self):
+        return self._space_edges
+
+    @space_edges.setter
+    def space_edges(self, value):
+        if not isinstance(value, list):
+            raise ValueError("space_edges must be a list")
+        self._space_edges = value
+
+    # Getter và Setter cho ts_edges
+    @property
+    def ts_edges(self):
+        return self._ts_edges
+
+    @ts_edges.setter
+    def ts_edges(self, value):
+        if not isinstance(value, list):
+            raise ValueError("ts_edges must be a list")
+        self._ts_edges = value
+
+    # Getter và Setter cho ts_nodes
+    @property
+    def ts_nodes(self):
+        return self._ts_nodes
+
+    @ts_nodes.setter
+    def ts_nodes(self, value):
+        if not isinstance(value, list):
+            raise ValueError("ts_nodes must be a list")
+        self._ts_nodes = value
+
+    # Getter và Setter cho tsedges
+    @property
+    def tsedges(self):
+        return self._tsedges
+
+    @tsedges.setter
+    def tsedges(self, value):
+        if not isinstance(value, list):
+            raise ValueError("tsedges must be a list")
+        self._tsedges = value
+
+    # Getter và Setter cho started_nodes
+    @property
+    def started_nodes(self):
+        return self._started_nodes
+
+    @started_nodes.setter
+    def started_nodes(self, value):
+        if not isinstance(value, list):
+            raise ValueError("started_nodes must be a list")
+        self._started_nodes = value
+
+    # Getter và Setter cho print_out
+    @property
+    def print_out(self):
+        return self._print_out
+
+    @print_out.setter
+    def print_out(self, value):
+        if not isinstance(value, bool):
+            raise ValueError("print_out must be a boolean")
+        self._print_out = value
+
+    # Getter và Setter cho time_window_controller
+    @property
+    def time_window_controller(self):
+        return self._time_window_controller
+
+    @time_window_controller.setter
+    def time_window_controller(self, value):
+        self._time_window_controller = value
+
+    # Getter và Setter cho restriction_controller
+    @property
+    def restriction_controller(self):
+        return self._restriction_controller
+
+    @restriction_controller.setter
+    def restriction_controller(self, value):
+        self._restriction_controller = value
+
+    # Getter và Setter cho start_ban
+    @property
+    def start_ban(self):
+        return self._start_ban
+
+    @start_ban.setter
+    def start_ban(self, value):
+        if not isinstance(value, int):
+            raise ValueError("start_ban must be an integer")
+        self._start_ban = value
+
+    # Getter và Setter cho end_ban
+    @property
+    def end_ban(self):
+        return self._end_ban
+
+    @end_ban.setter
+    def end_ban(self, value):
+        if not isinstance(value, int):
+            raise ValueError("end_ban must be an integer")
+        self._end_ban = value
+
+    # Getter và Setter cho seed
+    @property
+    def seed(self):
+        return self._seed
+
+    @seed.setter
+    def seed(self, value):
+        if not isinstance(value, int):
+            raise ValueError("seed must be an integer")
+        self._seed = value
+
+    # Getter và Setter cho num_max_agvs
+    @property
+    def num_max_agvs(self):
+        return self._num_max_agvs
+
+    @num_max_agvs.setter
+    def num_max_agvs(self, value):
+        self._num_max_agvs = value
+
+    # Getter và Setter cho graph
+    @property
+    def graph(self):
+        return self._graph
+
+    @graph.setter
+    def graph(self, value):
+        self._graph = value
     
     def append_target(self, target_node):
         if isinstance(target_node, TimeWindowNode):
@@ -79,7 +297,9 @@ class GraphProcessor:
             if(node.id == id):
                 return node
         return None
-    
+
+#======================================================================================
+
     def getReal(self, start_id, next_id, agv):
         M = self.graph.number_of_nodes_in_space_graph
         result = -1

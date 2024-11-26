@@ -133,7 +133,6 @@ class Event:
 
     def run_solver_trace(self, DimacsFileReader, filename, ForecastingModel):
         """ Run the trace creation with the selected solver. """
-        print("Running solver for trace creation...")
         self.createTracesFromSolver(DimacsFileReader, filename, ForecastingModel)
 
     def run_network_simplex(self, filename):

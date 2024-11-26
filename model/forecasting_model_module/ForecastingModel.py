@@ -358,10 +358,10 @@ class ForecastingModel:
     def check_time_limit(self):
         """ Checks and logs if the process has taken too long. """
         import time
-        milliseconds = int(round(time.time() * 1000))  # milliseconds since epoch
-        seconds = milliseconds / 1_000_000
-        if seconds > 60 * 100:
-            print(f"Process time (minutes): {seconds / (60 * 100)}")
+        milliseconds = int(round(time.time())) 
+        seconds = milliseconds / (1000 * 1000)
+        if (seconds > 60 * 100):
+            print(seconds/(60*100))
 
     def parse_variables_to_traces(self):
         """ Parse variables to build initial traces. """
