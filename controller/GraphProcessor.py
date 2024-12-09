@@ -607,7 +607,11 @@ class GraphProcessor:
         """Xử lý và cập nhật các cạnh mới vào đồ thị."""
         for edge in new_edges:
             arr = self.graph.parse_string(edge)
-            source_id, dest_id = arr[0], arr[1]
+            if arr is not None: 
+                source_id, dest_id = arr[0], arr[1] 
+            else:
+                # Xử lý khi arr là None 
+                print("arr is None")
             self.add_edge_to_graph(source_id, dest_id, arr)
 
     def add_edge_to_graph(self, source_id, dest_id, arr):

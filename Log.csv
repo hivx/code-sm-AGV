@@ -31,3 +31,4 @@ No,Map,Total AGVs,Horizontal Time,Time step,Solution,Num of Reaching Target AGVs
 30.0,Redundant3x3Wards.txt,10,300,10,networkx,6,4,1640.0,126.6659038066864,0.6389451205730439
 31.0,Redundant3x3Wards.txt,5,300,10,networkx,2,3,634.0,13.142562627792358,0.13190261522928873
 32.0,Redundant3x3Wards.txt,5,300,10,networkx,2,3,634.0,12.927681684494019,0.128531942764918
+33.0,Redundant3x3Wards.txt,5,300,10,networkx,2,3,634.0,12.421601295471191,0.12034070491790771
