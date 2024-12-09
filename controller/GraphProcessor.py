@@ -315,7 +315,7 @@ class GraphProcessor:
             result = 0
             self._update_agv_path(agv, next_id)
         
-        result = self._handle_special_cases(next_id, start_time, end_time, result)
+        result = self._handle_special_cases(start_id, next_id, start_time, end_time, result)
         
         if config.sfm:
             result = self._calculate_sfm_runtime(space_start_node, space_end_node, agv, start_time, result)
@@ -360,7 +360,7 @@ class GraphProcessor:
         if agv is not None:
             agv.path.add(node_id)
 
-    def _handle_special_cases(self, next_id, start_time, end_time, result):
+    def _handle_special_cases(self, start_id, next_id, start_time, end_time, result):
         try:
             if isinstance(self.graph.nodes[next_id], TimeWindowNode):
                 return end_time - start_time if result == -1 else result
