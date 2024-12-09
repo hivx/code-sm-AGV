@@ -366,7 +366,7 @@ class GraphProcessor:
                 return end_time - start_time if result == -1 else result
         except KeyError:
             for e in self.ts_edges:
-                if e[0] % self.number_of_nodes_in_space_graph == start_id % self.number_of_nodes_in_space_graph:
+                if e[0] % self.graph.number_of_nodes_in_space_graph == start_id % self.graph.number_of_nodes_in_space_graph:
                     result = e[4] if result == -1 else result
             return abs(end_time - start_time) if result == -1 else result
         return result
