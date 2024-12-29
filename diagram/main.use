@@ -1,0 +1,76 @@
+model SimulationSystem
+
+class Graph
+  attributes
+    id: Integer
+    totalNodes: Integer
+    totalEdges: Integer
+end
+
+class Node
+  attributes
+    id: Integer
+    positionX: Real
+    positionY: Real
+end
+
+class Edge
+  attributes
+    id: Integer
+    weight: Real
+end
+
+class AGV
+  attributes
+    id: Integer
+    status: String -- "active", "idle", "maintenance"
+    currentPosition: Integer -- Node ID
+    targetPosition: Integer -- Node ID
+end
+
+class Event
+  attributes
+    id: Integer
+    startTime: Real
+    endTime: Real
+    description: String
+end
+
+class Logger
+  attributes
+    filepath: String
+    numOfAGVs: Integer
+    totalCost: Real
+    elapsedTime: Real
+end
+
+class Config
+  attributes
+    solverChoice: String -- "solver", "network-simplex", "networkx"
+    totalCost: Real
+    reachingTargetAGVs: Integer
+    haltingAGVs: Integer
+    totalSolving: Integer
+    timeSolving: Real
+    numOfAGVs: Integer
+end
+
+association GraphNodes between
+  Graph[1] role graph
+  Node[*] role nodes
+end
+
+association GraphEdges between
+  Graph[1] role graph
+  Edge[*] role edges
+end
+
+association NodeEdges between
+  Node[1] role source
+  Edge[*] role outgoingEdges
+end
+
+association AGVTasks between
+  AGV[1] role agv
+  Event[*] role tasks
+end
